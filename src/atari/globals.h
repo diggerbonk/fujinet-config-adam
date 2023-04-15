@@ -14,7 +14,7 @@
 #define NUM_HOST_SLOTS      8
 
 // # of files to display on the page. Moved from select_file.c to here, for Atari.
-#define ENTRIES_PER_PAGE 13
+#define ENTRIES_PER_PAGE 16
 
 #define COLOR_SETTING_NETWORK 0x66
 #define COLOR_SETTING_FAILED 0x33
@@ -41,7 +41,7 @@
 #define NETWORKS_START_Y    4
 
 // Y position of the start of the file list from host.
-#define FILES_START_Y   6
+#define FILES_START_Y   5
 
 extern State state;
 extern char selected_host_slot;

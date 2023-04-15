@@ -109,7 +109,7 @@ void screen_perform_copy(char *sh, char *p, char *dh, char *dp);
 
 
 extern unsigned char *cursor_ptr;
-#define GRAPHICS_0_SCREEN_SIZE (40 * 25) // Defines the memory size in bytes
+#define GRAPHICS_0_SCREEN_SIZE (40 * 24) // Defines the memory size in bytes
 #define DISPLAY_LIST 0x0600              // Memory address to store DISPLAY_LIST.  0x0600 is the first address available for user space memory (1)
 #define DISPLAY_MEMORY 0x7400            // Memory address to store DISPLAY_MEMORY.
 

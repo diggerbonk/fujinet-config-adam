@@ -39,9 +39,9 @@ void config_dlist =
         DL_BLK8,              // 0x00 (8 Blank Scanlines)
         DL_BLK8,              // 0x01 (8 Blank Scanlines)
         DL_BLK8,              // 0x02 (8 Blank Scanlines)
-        DL_LMS(DL_CHR20x8x2), // 0x03 Line 0 (first line of displayable text, will start at coordinates 0,0)
+        DL_LMS(DL_CHR40x8x1), // 0x03 Line 0 (first line of displayable text, will start at coordinates 0,0)
         DISPLAY_MEMORY,       // 0x04 and 0x05 This is the high order bit location of the display list.  Defined in screen.h
-        DL_CHR20x8x2,         // 0x06  Line 1
+        DL_CHR40x8x1,         // 0x06  Line 1
         DL_CHR40x8x1,         // 0x07  Line 2
         DL_CHR40x8x1,         // 0x08  Line 3
         DL_CHR40x8x1,         // 0x09  Line 4
@@ -62,10 +62,10 @@ void config_dlist =
         DL_CHR40x8x1,         // 0x18  Line 19
         DL_CHR40x8x1,         // 0x19  Line 20
         DL_CHR40x8x1,         // 0x1a  Line 21
-        DL_CHR20x8x2,         // 0x1b  Line 22
-        DL_CHR20x8x2,         // 0x1c  Line 23
+        DL_CHR40x8x1,         // 0x1b  Line 22
+        DL_CHR40x8x1,         // 0x1c  Line 23
         DL_CHR40x8x1,         // 0x1d  Line 24
-        DL_CHR40x8x1,         // 0x1e  Line 25
+//        DL_CHR40x8x1,         // 0x1e  Line 25
         DL_JVB,               // Signal to ANTIC end of DISPLAY_LIST has been reached and loop back to the beginning.  The jump to the begining is located at the next two bits defined below.
         DISPLAY_LIST          // 0x1f, 0x20  Memory address containing the entire display list.
 };
@@ -102,156 +102,9 @@ void set_cursor(unsigned char x, unsigned char y)
   // determining how many colums in the returned mode, and doing the math accordingly, but this is good for now, just
   // verbose.
   //
-  if (active_screen == SCREEN_HOSTS_AND_DEVICES)
-  {
-    // 2x20 column (host header)
-    // 8x40 column (host list)
-    // 2x20 column (drive slot header)
-    // rest 40 column (drive slots and commands)
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20); // * 20 since these are 20 column lines.
-    }
-    else if (y < 10)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40); // * 40 since these are 40 column lines, and add 40 to cover the 1st 2 lines of 20 (prev condition)
-    }
-    else if (y < 12)
-    {
-      cursor_ptr = video_ptr + 40 + 320 + x + ((y - 10) * 20); // * 20 since these are 20 column lines, add 320 to cover the previous set of 40 chol lines, and 40 for the 1st set of 20 col lines.
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 320 + 40 + x + ((y - 12) * 40); // * 20, rest of the the lines are 40 column, add 40 (1st 2), 320 (next 8 of 40), 40 (next 2 of 20)
-    }
-  }
-  else if (active_screen == SCREEN_SHOW_INFO)
-  {
-    // 2x20
-    // 3x40
-    // 1x20 (double height)
-    // 1x20 normal
-    // rest 40
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else if (y < 5)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40);
-    }
-    else if (y < 6)
-    {
-      cursor_ptr = video_ptr + 40 + 120 + x + ((y - 5) * 20);
-    }
-    else if (y < 7)
-    {
-      cursor_ptr = video_ptr + 40 + 140 + x + ((y - 6) * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 160 + x + ((y - 7) * 40);
-    }
-  }
-  // Right now these two are the same, break apart in future if they start to differ.
-  else if (active_screen == SCREEN_SELECT_FILE || active_screen == SCREEN_SELECT_SLOT || active_screen == SCREEN_MOUNT_AND_BOOT)
-  {
-    // 1x20
-    // rest 40
-    if (y < 1)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 20 + x + ((y - 1) * 40);
-    }
-  }
-  else if (active_screen == SCREEN_SET_WIFI)
-  {
-    // 2x20
-    // 20x40
-    // 2x20
-    // 2x40
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else if (y < 22)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40);
-    }
-    else if (y < 24)
-    {
-      cursor_ptr = video_ptr + 40 + 800 + ((y - 22) * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 800 + 40 + ((y - 24) * 40);
-    }
-  }
-  else if (active_screen == SCREEN_CONNECT_WIFI)
-  {
-    // 2x20
-    // 20x40
-    // 2x20
-    // rest 40
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else if (y < 22)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40);
-    }
-    else if (y < 24)
-    {
-      cursor_ptr = video_ptr + 40 + 800 + ((y - 22) * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 800 + 40 + ((y - 24) * 40);
-    }
-  }
-  /*
-  else if (active_screen == SCREEN_MOUNT_AND_BOOT)
-  {
-    // 2x20
-    // 8x40
-    // 2x20
-    // 10x40
-    // 2x20
-    // rest 40
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else if (y < 10)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40);
-    }
-    else if (y < 12)
-    {
-      cursor_ptr = video_ptr + 40 + 320 + x + ((y - 10) * 20);
-    }
-    else if (y < 22)
-    {
-      cursor_ptr = video_ptr + 40 + 320 + 40 + ((y - 12) * 40);
-    }
-    else if (y < 24)
-    {
-      cursor_ptr = video_ptr + 40 + 320 + 40 + 400 + ((y - 22) * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 320 + 40 + 400 + 40 + ((y - 24) * 40);
-    }
-  }*/
-  else
-  {
-    // Default to all 40 character lines.
-    cursor_ptr = video_ptr + x + (y * 40);
-  }
+
+  // Default to all 40 character lines.
+  cursor_ptr = video_ptr + x + (y * 40);
 }
 
 /**********************
@@ -259,7 +112,7 @@ void set_cursor(unsigned char x, unsigned char y)
  */
 void put_char(char c)
 {
-  char offset;
+  char offset = 0;
   if (c < 32)
   {
     offset = 64;
@@ -268,7 +121,7 @@ void put_char(char c)
   {
     offset = -32;
   }
-  else
+  else if (c < 128)
   {
     offset = 0;
   }
@@ -277,10 +130,18 @@ void put_char(char c)
 
 void screen_append(char *s)
 {
-  while (*s != 0)
-  {
+  while (*s != 0) {
     put_char(*s);
     ++s;
+  }
+}
+
+void screen_append_mx(char *s, unsigned char mx)
+{
+  while (*s != 0 && mx > 0) {
+    put_char(*s);
+    ++s;
+    mx--;
   }
 }
 
@@ -444,7 +305,8 @@ void screen_show_info(int printerEnabled, AdapterConfig *ac)
   screen_clear();
   bar_clear(false);
 
-  screen_puts(3, 5, "#FUJINET CONFIG");
+
+  screen_puts(0, 0, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 FUJINET CONFIG \x12\x12");
   screen_puts(7, 17,
               CH_KEY_LABEL_L CH_INV_C CH_KEY_LABEL_R "RECONNECT " CH_KEY_LABEL_L CH_INV_S CH_KEY_LABEL_R "CHANGE SSID");
   screen_puts(9, 19, "Any other key to return");
@@ -547,19 +409,19 @@ void screen_select_file(void)
   screen_clear();
   bar_clear(false);
 
-  screen_puts(4, 0, "DISK IMAGES");
+  screen_puts(0, 0, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 TNFS BROWSER \x12\x12");
 
   if (copy_mode == false)
   {
-    screen_puts(0, 21,
+    screen_puts(0, 22,
                 CH_KEY_LEFT CH_KEY_DELETE "Up Dir" CH_KEY_N "ew" CH_KEY_F "ilter" CH_KEY_C "opy");
   }
   else
   {
-    screen_puts(0, 21,
+    screen_puts(0, 22,
                 CH_KEY_LEFT CH_KEY_DELETE "Up Dir" CH_KEY_N "ew" CH_KEY_F "ilter" CH_KEY_C "Do It!");
   }
-  screen_puts(0, 22,
+  screen_puts(0, 23,
               CH_KEY_RIGHT CH_KEY_RETURN "Choose" CH_KEY_OPTION "Boot" CH_KEY_ESC "Abort");
 }
 
@@ -575,8 +437,6 @@ void screen_select_file_display(char *p, char *f)
   screen_puts(5, 2, f);
 
   // Path - the path can wrap to line 4 (maybe 5?) so clear both to be safe.
-  screen_clear_line(3);
-  screen_clear_line(4);
   screen_puts(0, 3, "Path:");
   screen_puts(5, 3, p);
 
@@ -587,8 +447,8 @@ void screen_select_file_display(char *p, char *f)
   }
 
   // clear Prev/next page lines. Sometimes they're left on the screen during directory devance.
-  screen_clear_line(FILES_START_Y + ENTRIES_PER_PAGE);
-  screen_clear_line(FILES_START_Y - 1);
+  //screen_clear_line(FILES_START_Y + ENTRIES_PER_PAGE);
+  //screen_clear_line(FILES_START_Y - 1);
 }
 
 void screen_select_file_display_long_filename(char *e)
@@ -610,7 +470,7 @@ void screen_select_file_filter(void)
 
 void screen_select_file_next(void)
 {
-  if (dir_eof == false)
+  /*if (dir_eof == false)
   {
     screen_puts(0, FILES_START_Y + ENTRIES_PER_PAGE, CH_KEY_GT "Next Page");
   }
@@ -618,11 +478,12 @@ void screen_select_file_next(void)
   {
     // We're on the first page, clear the line with the "Previous Page" text.
     screen_clear_line(FILES_START_Y - 1);
-  }
+  }*/
 }
 
 void screen_select_file_prev(void)
 {
+/*
   if (pos > 0)
   {
     screen_puts(0, FILES_START_Y - 1, CH_KEY_LT "Previous Page");
@@ -633,30 +494,20 @@ void screen_select_file_prev(void)
     // We're on the last page, clear the line with the "Next Page" text.
     screen_clear_line(FILES_START_Y + ENTRIES_PER_PAGE);
   }
+*/
 }
 
 void screen_select_file_display_entry(unsigned char y, char *e)
 {
-
-/*
-  if (e[strlen(e)-1]=='/')
-    screen_puts(0,FILES_START_Y+y,CH_FOLDER);
-  else if (e[0]=='=') 
-    screen_puts(0,FILES_START_Y+y,CH_SERVER);
-  else
-  */
-
   if (e[strlen(e)-1]=='/')
   {
     screen_puts(0,FILES_START_Y+y,CH_FOLDER);
   }
-  else if (e[0]=='=') 
+  else if (e[0]=='+') 
   {
     screen_puts(0,FILES_START_Y+y,CH_SERVER);
   }
-  
-  screen_puts(3, FILES_START_Y + y, e);
-
+  screen_puts(2, FILES_START_Y + y, e);
 }
 
 void screen_select_file_choose(char visibleEntries)
@@ -727,8 +578,8 @@ void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
   bar_clear(false);
 
 
-  screen_puts(3, 0, "TNFS HOST LIST");
-  screen_puts(4, 11, "DRIVE SLOTS");
+  screen_puts(0, 0, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 TNFS HOST LIST \x12\x12");
+  screen_puts(0, 11, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 DRIVE SLOTS \x12\x12");
 
   while (retry > 0)
   {
@@ -803,7 +654,7 @@ void screen_hosts_and_devices_devices(void)
   screen_clear_line(23);
 
   screen_clear_line(11);
-  screen_puts(4, 11, "DRIVE SLOTS");
+  screen_puts(0, 11,"\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 DRIVE SLOTS \x12\x12");
 
   screen_puts(3, 22,
               CH_KEY_1TO8 "Slot" CH_KEY_LABEL_L CH_INV_E CH_KEY_LABEL_R "ject" CH_KEY_LABEL_L CH_INV_C CH_INV_L CH_INV_E CH_INV_A CH_INV_R CH_KEY_LABEL_R "All Slots");
@@ -921,6 +772,13 @@ void screen_init(void)
 {
   memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist)); // copy display list to $0600
   OS.sdlst = (void *)DISPLAY_LIST;                                   // and use it.
+
+  OS.color0=0;  // PF color 0
+  OS.color1=12; // Text color
+  OS.color2=0;  // Background color
+  OS.color3=0;  // PF color 3
+  OS.color4=0;  // Frame color
+
   video_ptr = (unsigned char *)(DISPLAY_MEMORY);                     // assign the value of DISPLAY_MEMORY to video_ptr
 
   font_init();
@@ -982,8 +840,8 @@ void screen_dlist_show_info(void)
   // Start with original display list, then modify for this screen.
   memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
 
-  POKE(DISPLAY_LIST + 0x0a, DL_CHR20x8x2);
-  POKE(DISPLAY_LIST + 0x0b, DL_CHR20x8x2);
+  POKE(DISPLAY_LIST + 0x0a, DL_CHR40x8x1);
+  POKE(DISPLAY_LIST + 0x0b, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x0f, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x10, DL_CHR40x8x1);
 }
@@ -993,8 +851,8 @@ void screen_dlist_set_wifi(void)
   memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
   POKE(DISPLAY_LIST + 0x0a, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x0b, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1b, DL_CHR20x8x2);
-  POKE(DISPLAY_LIST + 0x1c, DL_CHR20x8x2);
+  POKE(DISPLAY_LIST + 0x1b, DL_CHR40x8x1);
+  POKE(DISPLAY_LIST + 0x1c, DL_CHR40x8x1);
 }
 
 void screen_dlist_mount_and_boot(void)
@@ -1023,9 +881,9 @@ void screen_dlist_hosts_and_devices(void)
   // 2x20 column (drive slot header)
   // rest 40 column (drive slots and commands)
   memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
-  POKE(DISPLAY_LIST + 0x06, DL_CHR20x8x2);
-  POKE(DISPLAY_LIST + 0x0f, DL_CHR20x8x2);
-  POKE(DISPLAY_LIST + 0x10, DL_CHR20x8x2);
+  POKE(DISPLAY_LIST + 0x06, DL_CHR40x8x1);
+  POKE(DISPLAY_LIST + 0x0f, DL_CHR40x8x1);
+  POKE(DISPLAY_LIST + 0x10, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x0a, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x0b, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x1b, DL_CHR40x8x1);
