@@ -151,7 +151,6 @@ void font_init()
 
 void screen_mount_and_boot()
 {
-//  screen_dlist_mount_and_boot();
   set_active_screen(SCREEN_MOUNT_AND_BOOT);
   screen_clear();
   bar_clear(false);
@@ -163,7 +162,6 @@ void screen_set_wifi(AdapterConfig *ac)
   unsigned char i = 0;
   unsigned char x = 13;
 
-//  screen_dlist_set_wifi();
   set_active_screen(SCREEN_SET_WIFI);
   screen_clear();
   bar_clear(false);
@@ -287,7 +285,6 @@ void itoa_hex(unsigned char val, char *buf)
 void screen_show_info(int printerEnabled, AdapterConfig *ac)
 {
   unsigned char i;
-//  screen_dlist_show_info();
   set_active_screen(SCREEN_SHOW_INFO);
   screen_clear();
   bar_clear(false);
@@ -323,7 +320,6 @@ void screen_select_slot(char *e)
   unsigned int *s;
   unsigned char d[40];
 
-//  screen_dlist_select_slot();
   set_active_screen(SCREEN_SELECT_SLOT);
 
   screen_clear();
@@ -391,7 +387,6 @@ void screen_select_slot_build_eos_directory_creating(void)
 
 void screen_select_file(void)
 {
-//  screen_dlist_select_file();
   set_active_screen(SCREEN_SELECT_FILE);
   screen_clear();
   bar_clear(false);
@@ -558,7 +553,6 @@ void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
   unsigned char i;
   char temp[10];
 
-//  screen_dlist_hosts_and_devices();
   set_active_screen(SCREEN_HOSTS_AND_DEVICES);
 
   screen_clear();
@@ -801,57 +795,9 @@ void screen_perform_copy(char *sh, char *p, char *dh, char *dp)
   bar_clear(false);
   screen_puts(0, 0, "COPYING, PLEASE WAIT");
 }
-/*
-void screen_dlist_select_file(void)
-{
-  memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
-  POKE(DISPLAY_LIST + 0x06, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x0f, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x10, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1b, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1c, DL_CHR40x8x1);
-}
-
-void screen_dlist_select_slot(void)
-{
-  memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
-  POKE(DISPLAY_LIST + 0x06, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x0f, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x10, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1b, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1c, DL_CHR40x8x1);
-}
-
-void screen_dlist_show_info(void)
-{
-  // Start with original display list, then modify for this screen.
-  memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
-
-  POKE(DISPLAY_LIST + 0x0a, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x0b, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x0f, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x10, DL_CHR40x8x1);
-}
-
-void screen_dlist_set_wifi(void)
-{
-  memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
-  POKE(DISPLAY_LIST + 0x0a, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x0b, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1b, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1c, DL_CHR40x8x1);
-}
-
-void screen_dlist_mount_and_boot(void)
-{
-  memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
-  screen_dlist_select_file();
-}
-*/
 
 void screen_connect_wifi(NetConfig *nc)
 {
-//  screen_dlist_set_wifi();
   set_active_screen(SCREEN_CONNECT_WIFI);
   screen_clear();
   bar_clear(false);
@@ -860,24 +806,7 @@ void screen_connect_wifi(NetConfig *nc)
   screen_puts(2, 3, nc->ssid);
   bar_show(3);
 }
-/*
-void screen_dlist_hosts_and_devices(void)
-{
-  // Screen Layout
-  // 2x20 column (host header)
-  // 8x40 column (host list)
-  // 2x20 column (drive slot header)
-  // rest 40 column (drive slots and commands)
-  memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
-  POKE(DISPLAY_LIST + 0x06, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x0f, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x10, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x0a, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x0b, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1b, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1c, DL_CHR40x8x1);
-}
-*/
+
 int _screen_input(unsigned char x, unsigned char y, char *s, unsigned char maxlen)
 {
   unsigned char k, o;
