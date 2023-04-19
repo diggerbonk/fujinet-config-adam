@@ -34,6 +34,7 @@ _screen active_screen = SCREEN_HOSTS_AND_DEVICES;
 
 // Set up the initial display list.
 // Note: Using 25 lines in this version vs 23 in the original config (2 additional at the bottom).
+
 void config_dlist =
     {
         DL_BLK8,              // 0x00 (8 Blank Scanlines)
@@ -70,6 +71,7 @@ void config_dlist =
         DISPLAY_LIST          // 0x1f, 0x20  Memory address containing the entire display list.
 };
 
+
 // Patch to the character set to add things like the folder icon and the wifi-signal-strength bars.
 // Each new character is 8-bytes.
 //
@@ -89,21 +91,6 @@ void set_active_screen(unsigned char screen)
 
 void set_cursor(unsigned char x, unsigned char y)
 {
-  // Each screen uses a different displaylist so we need to know how many columns each row is so we can calculate
-  // how many bytes to add to the base video memory pointer. Previously it assumed 40 columns which resulted in the Y
-  // coordinate not always use correctly in screen functions.
-  //
-  // For example, if line 1 is only 20 rows, and the rest of the lines are 40 rows and you called "set_cursor(0, 3)", the
-  // original set_cursor did "x+y*40" which would be an offset of 120 which would put the cursor 20 characters into the 4th line 
-  // since line 1 was only 20 characters.
-  //
-  // This is a hacky way to do it - basically we just see what screen we're on, and since we "know" the layout so we do the math
-  // appopriately. This could be more elegant by doing something like "walking" through the displaylist, PEEKing the value,
-  // determining how many colums in the returned mode, and doing the math accordingly, but this is good for now, just
-  // verbose.
-  //
-
-  // Default to all 40 character lines.
   cursor_ptr = video_ptr + x + (y * 40);
 }
 
@@ -164,7 +151,7 @@ void font_init()
 
 void screen_mount_and_boot()
 {
-  screen_dlist_mount_and_boot();
+//  screen_dlist_mount_and_boot();
   set_active_screen(SCREEN_MOUNT_AND_BOOT);
   screen_clear();
   bar_clear(false);
@@ -176,7 +163,7 @@ void screen_set_wifi(AdapterConfig *ac)
   unsigned char i = 0;
   unsigned char x = 13;
 
-  screen_dlist_set_wifi();
+//  screen_dlist_set_wifi();
   set_active_screen(SCREEN_SET_WIFI);
   screen_clear();
   bar_clear(false);
@@ -300,7 +287,7 @@ void itoa_hex(unsigned char val, char *buf)
 void screen_show_info(int printerEnabled, AdapterConfig *ac)
 {
   unsigned char i;
-  screen_dlist_show_info();
+//  screen_dlist_show_info();
   set_active_screen(SCREEN_SHOW_INFO);
   screen_clear();
   bar_clear(false);
@@ -336,7 +323,7 @@ void screen_select_slot(char *e)
   unsigned int *s;
   unsigned char d[40];
 
-  screen_dlist_select_slot();
+//  screen_dlist_select_slot();
   set_active_screen(SCREEN_SELECT_SLOT);
 
   screen_clear();
@@ -404,7 +391,7 @@ void screen_select_slot_build_eos_directory_creating(void)
 
 void screen_select_file(void)
 {
-  screen_dlist_select_file();
+//  screen_dlist_select_file();
   set_active_screen(SCREEN_SELECT_FILE);
   screen_clear();
   bar_clear(false);
@@ -571,7 +558,7 @@ void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
   unsigned char i;
   char temp[10];
 
-  screen_dlist_hosts_and_devices();
+//  screen_dlist_hosts_and_devices();
   set_active_screen(SCREEN_HOSTS_AND_DEVICES);
 
   screen_clear();
@@ -814,7 +801,7 @@ void screen_perform_copy(char *sh, char *p, char *dh, char *dp)
   bar_clear(false);
   screen_puts(0, 0, "COPYING, PLEASE WAIT");
 }
-
+/*
 void screen_dlist_select_file(void)
 {
   memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
@@ -860,10 +847,11 @@ void screen_dlist_mount_and_boot(void)
   memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
   screen_dlist_select_file();
 }
+*/
 
 void screen_connect_wifi(NetConfig *nc)
 {
-  screen_dlist_set_wifi();
+//  screen_dlist_set_wifi();
   set_active_screen(SCREEN_CONNECT_WIFI);
   screen_clear();
   bar_clear(false);
@@ -872,7 +860,7 @@ void screen_connect_wifi(NetConfig *nc)
   screen_puts(2, 3, nc->ssid);
   bar_show(3);
 }
-
+/*
 void screen_dlist_hosts_and_devices(void)
 {
   // Screen Layout
@@ -889,7 +877,7 @@ void screen_dlist_hosts_and_devices(void)
   POKE(DISPLAY_LIST + 0x1b, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x1c, DL_CHR40x8x1);
 }
-
+*/
 int _screen_input(unsigned char x, unsigned char y, char *s, unsigned char maxlen)
 {
   unsigned char k, o;

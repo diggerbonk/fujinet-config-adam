@@ -248,6 +248,8 @@ void io_open_directory(unsigned char hs, char *p, char *f)
   OS.dcb.dstats = 0x80;
   OS.dcb.dbyt = 256;
   OS.dcb.daux1 = hs;
+
+  // set daux2 > 0 to enable Fuji Menu
   OS.dcb.daux2 = 0x01;
   siov();
 }

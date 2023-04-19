@@ -31,6 +31,7 @@ void screen_debug(char *message);
 void set_active_screen(unsigned char screen);
 void screen_mount_and_boot();
 int _screen_input(unsigned char x, unsigned char y, char *s, unsigned char maxlen);
+/*
 void screen_dlist_connect_wifi(void);
 void screen_dlist_hosts_and_devices(void);
 void screen_dlist_show_info(void);
@@ -38,6 +39,7 @@ void screen_dlist_select_file(void);
 void screen_dlist_set_wifi(void);
 void screen_dlist_mount_and_boot(void);
 void screen_dlist_select_slot(void);
+*/
 void screen_print_ip(unsigned char x, unsigned char y, unsigned char *buf);
 void screen_print_mac(unsigned char x, unsigned char y, unsigned char *buf);
 void itoa_hex(unsigned char val, char *buf);
