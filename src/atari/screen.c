@@ -60,12 +60,12 @@ void config_dlist =
         DL_CHR40x8x1,         // 0x15  Line 16
         DL_CHR40x8x1,         // 0x16  Line 17
         DL_CHR40x8x1,         // 0x17  Line 18
-        DL_CHR40x8x1,         // 0x18  Line 19
+        DL_DLI(DL_CHR40x8x1),         // 0x18  Line 19
         DL_CHR40x8x1,         // 0x19  Line 20
         DL_CHR40x8x1,         // 0x1a  Line 21
         DL_CHR40x8x1,         // 0x1b  Line 22
         DL_CHR40x8x1,         // 0x1c  Line 23
-        DL_CHR40x8x1,         // 0x1d  Line 24
+//        DL_CHR40x8x1,         // 0x1d  Line 24
 //        DL_CHR40x8x1,         // 0x1e  Line 25
         DL_JVB,               // Signal to ANTIC end of DISPLAY_LIST has been reached and loop back to the beginning.  The jump to the begining is located at the next two bits defined below.
         DISPLAY_LIST          // 0x1f, 0x20  Memory address containing the entire display list.
@@ -391,7 +391,10 @@ void screen_select_file(void)
   screen_clear();
   bar_clear(false);
 
-  screen_puts(0, 0, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 TNFS BROWSER \x12\x12");
+  //screen_puts(0, 17, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 FujiMenu \x12\x12");
+  screen_puts(0, 17, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
+  screen_puts(0, 21, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
+
 
   if (copy_mode == false)
   {
@@ -405,22 +408,23 @@ void screen_select_file(void)
   }
   screen_puts(0, 23,
               CH_KEY_RIGHT CH_KEY_RETURN "Choose" CH_KEY_OPTION "Boot" CH_KEY_ESC "Abort");
+
 }
 
 void screen_select_file_display(char *p, char *f)
 {
   unsigned char i;
   // Host
-  screen_puts(0, 1, "Host:");
-  screen_puts(5, 1, selected_host_name);
+  screen_puts(0, 18, "Host:");
+  screen_puts(5, 18, selected_host_name);
 
   // Filter
-  screen_puts(0, 2, "Fltr:");
-  screen_puts(5, 2, f);
+  screen_puts(0, 19, "Fltr:");
+  screen_puts(5, 19, f);
 
   // Path - the path can wrap to line 4 (maybe 5?) so clear both to be safe.
-  screen_puts(0, 3, "Path:");
-  screen_puts(5, 3, p);
+  screen_puts(0, 20, "Path:");
+  screen_puts(5, 20, p);
 
   // Clear out the file area
   for (i = FILES_START_Y; i < FILES_START_Y + ENTRIES_PER_PAGE; i++)
@@ -442,7 +446,6 @@ void screen_select_file_clear_long_filename(void)
 {
   screen_clear_line(24);
   screen_clear_line(25);
-
 }
 
 void screen_select_file_filter(void)
@@ -489,7 +492,7 @@ void screen_select_file_display_entry(unsigned char y, char *e)
   {
     screen_puts(0,FILES_START_Y+y,CH_SERVER);
   }
-  screen_puts(2, FILES_START_Y + y, e);
+  screen_puts(0, FILES_START_Y + y, e);
 }
 
 void screen_select_file_choose(char visibleEntries)

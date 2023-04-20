@@ -194,7 +194,7 @@ void select_display_long_filename(void)
   char *e;
 
 #ifdef BUILD_ATARI
-  if ((entry_size[bar_get() - FILES_START_Y] > 30) && (entry_timer == 0))
+  if ((entry_size[bar_get() - FILES_START_Y] > LONG_FILENAME) && (entry_timer == 0))
 #else
   if ((entry_size[bar_get()] > 30) && (entry_timer == 0))
 #endif

@@ -8,6 +8,7 @@
 #define SELECT_FILE_H
 
 #define ENTRY_TIMER_DUR 128
+#define LONG_FILENAME 40
 
 void select_file(void);
 void select_display_long_filename(void);
