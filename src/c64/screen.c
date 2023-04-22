@@ -186,7 +186,7 @@ void screen_select_file_next(void)
   gotoxy(0,18); cprintf("%40s","[...]");
 }
 
-void screen_select_file_display_entry(unsigned char y, char* e)
+void screen_select_file_display_entry(unsigned char y, char* e, char entryType)
 {
   gotoxy(0,y+3);
   cprintf("%c%c",*e++,*e++);

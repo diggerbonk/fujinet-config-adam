@@ -89,7 +89,7 @@ void screen_select_file_clear_long_filename(void);
 void screen_select_file_filter(void);
 void screen_select_file_next(void);
 void screen_select_file_prev(void);
-void screen_select_file_display_entry(unsigned char y, char *e);
+void screen_select_file_display_entry(unsigned char y, char *e, char entryType);
 void screen_select_file_choose(char visibleEntries);
 void screen_select_file_new_type(void);
 void screen_select_file_new_size(unsigned char k);
@@ -120,7 +120,9 @@ extern unsigned char *cursor_ptr;
  **/
 
 #define CH_FOLDER "\x04"      // Set the character folder to #
-#define CH_SERVER "\x06"      // Set the server folder to atari heart.
+#define CH_LINK "\x07"      // Set the server folder to atari heart.
+#define CH_DISK "\x08"      // Disk image
+#define CH_BIN "\x08"
 #define CH_KEY_LABEL_L "\xD9" // Left arrow on the keyboard
 #define CH_KEY_LABEL_R "\x19" // Right arrow on the keyboard
 

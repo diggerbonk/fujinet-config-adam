@@ -108,14 +108,16 @@ void dli_routine2(void)
 // Patch to the character set to add things like the folder icon and the wifi-signal-strength bars.
 // Each new character is 8-bytes.
 //
-unsigned char fontPatch[48] = {
-    0, 0, 0, 0, 0, 0, 3, 51,
-    0, 0, 3, 3, 51, 51, 51, 51,
-    48, 48, 48, 48, 48, 48, 48, 48,
-    0, 120, 135, 255, 255, 255, 255, 0,
-    0x00, 0x78, 0x87, 0xff, 0xff, 0xff, 0xff, 0x00,
-    0, 48, 120, 252, 48, 48, 48, 0};
-
+unsigned char fontPatch[64] = {
+    0    ,0    ,0    ,0    ,0    ,0    ,3    ,51,
+    0    ,0    ,3    ,3    ,51   ,51   ,51   ,51,
+    48   ,48   ,48   ,48   ,48   ,48   ,48   ,48,
+    0    ,120  ,135  ,255  ,255  ,255  ,255  ,0,
+    0x00 ,0x78 ,0x87 ,0xff ,0xff ,0xff ,0xff ,0x00,
+    0    ,48   ,120  ,252  ,48   ,48   ,48   ,0,
+    0    ,108  ,219  ,146  ,182  ,108  ,0    ,0,
+    202  ,202  ,194  ,254  ,254  ,254  ,254  ,0
+};
 
 void set_active_screen(unsigned char screen)
 {
@@ -514,17 +516,21 @@ void screen_select_file_prev(void)
 */
 }
 
-void screen_select_file_display_entry(unsigned char y, char *e)
+void screen_select_file_display_entry(unsigned char y, char *e, char entryType)
 {
-  if (e[strlen(e)-1]=='/')
+  if (entryType > 0)
   {
-    screen_puts(0,FILES_START_Y+y,CH_FOLDER);
+    if (entryType == 1) screen_puts(0,FILES_START_Y+y,CH_FOLDER);
+    else if (entryType == 2) screen_puts(0,FILES_START_Y+y,CH_DISK);
+    else if (entryType == 3) screen_puts(0,FILES_START_Y+y,CH_BIN);
+    else if (entryType == 4) screen_puts(0,FILES_START_Y+y,CH_LINK);
+    else screen_puts(0,FILES_START_Y+y,CH_BIN);
+    screen_puts(2, FILES_START_Y + y, e);
   }
-  else if (e[0]=='+') 
+  else 
   {
-    screen_puts(0,FILES_START_Y+y,CH_SERVER);
+    screen_puts(0, FILES_START_Y + y, e);
   }
-  screen_puts(0, FILES_START_Y + y, e);
 }
 
 void screen_select_file_choose(char visibleEntries)
