@@ -142,7 +142,7 @@ unsigned char select_file_display(void)
 
   for (i = 0; i < ENTRIES_PER_PAGE; i++)
   {
-    e = io_read_directory(DIR_MAX_LEN, 0);
+    e = io_read_directory(39/*DIR_MAX_LEN*/, 0x40);
 #ifdef BUILD_ADAM
 #define FUDGE_OFFSET 2
 #else
@@ -162,7 +162,7 @@ unsigned char select_file_display(void)
   }
 
   // Do one more read to check EOF
-  e = io_read_directory(DIR_MAX_LEN, 0);
+  e = io_read_directory(39 /*DIR_MAX_LEN*/, 0x40);
   if (e[1] == 0x7F) // was e[2]
     dir_eof = true;
 
