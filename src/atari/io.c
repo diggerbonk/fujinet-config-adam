@@ -247,7 +247,8 @@ void io_open_directory(unsigned char hs, char *p, char *f)
   OS.dcb.dcomnd = 0xF7;
   OS.dcb.dstats = 0x80;
   OS.dcb.dbyt = 256;
-  OS.dcb.daux = hs;
+  OS.dcb.daux1 = hs;
+  OS.dcb.daux2 = 0x01;
   siov();
 }
 

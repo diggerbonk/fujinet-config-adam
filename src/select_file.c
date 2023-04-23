@@ -142,7 +142,7 @@ unsigned char select_file_display(void)
 
   for (i = 0; i < ENTRIES_PER_PAGE; i++)
   {
-    e = io_read_directory(DIR_MAX_LEN, 0);
+    e = io_read_directory(DIR_MAX_LEN, 0x40);
 #ifdef BUILD_ADAM
 #define FUDGE_OFFSET 2
 #else
@@ -155,14 +155,14 @@ unsigned char select_file_display(void)
     }
     else
     {
-      entry_size[i] = strlen(e);
+      entry_size[i] = strlen(e+1);
       visibleEntries++; // could filter on e[0] to deal with message entries like on FUJINET.PL
-      screen_select_file_display_entry(i, e);
+      screen_select_file_display_entry(i, e+1, e[0]);
     }
   }
 
   // Do one more read to check EOF
-  e = io_read_directory(DIR_MAX_LEN, 0);
+  e = io_read_directory(DIR_MAX_LEN, 0x40);
   if (e[1] == 0x7F) // was e[2]
     dir_eof = true;
 

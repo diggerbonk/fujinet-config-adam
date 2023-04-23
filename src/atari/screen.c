@@ -635,28 +635,20 @@ void screen_select_file_prev(void)
   }
 }
 
-void screen_select_file_display_entry(unsigned char y, char *e)
+void screen_select_file_display_entry(unsigned char y, char *e, char menuEntryType)
 {
-
-/*
-  if (e[strlen(e)-1]=='/')
-    screen_puts(0,FILES_START_Y+y,CH_FOLDER);
-  else if (e[0]=='=') 
-    screen_puts(0,FILES_START_Y+y,CH_SERVER);
+  if (menuEntryType > 0)
+  {
+    if (menuEntryType == 1) screen_puts(1,FILES_START_Y+y,CH_FOLDER);
+    else if (menuEntryType == 2) screen_puts(1,FILES_START_Y+y,"f");
+    else if (menuEntryType == 3) screen_puts(1,FILES_START_Y+y,CH_SERVER);
+    else screen_puts(1,FILES_START_Y+y,"*");
+    screen_puts(3, FILES_START_Y + y, e);
+  }
   else
-  */
-
-  if (e[strlen(e)-1]=='/')
   {
-    screen_puts(0,FILES_START_Y+y,CH_FOLDER);
+    screen_puts(0, FILES_START_Y + y, e);
   }
-  else if (e[0]=='=') 
-  {
-    screen_puts(0,FILES_START_Y+y,CH_SERVER);
-  }
-  
-  screen_puts(3, FILES_START_Y + y, e);
-
 }
 
 void screen_select_file_choose(char visibleEntries)
