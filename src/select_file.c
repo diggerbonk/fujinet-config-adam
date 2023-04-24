@@ -307,6 +307,13 @@ void select_file_devance(void)
 
 unsigned char select_file_is_folder(void)
 {
+    unsigned char result = select_file_type();
+    if (result == 1) return true;
+    else return false;
+}
+
+unsigned char select_file_type(void)
+{
   char *e;
   unsigned char result;
 
@@ -314,9 +321,8 @@ unsigned char select_file_is_folder(void)
 
   io_set_directory_position(pos);
 
-  e = io_read_directory(128, 0);
-
-  result = (strrchr(e, '/') != NULL);
+  e = io_read_directory(16, 0x40); // 0x40 -> get type info
+  result = e[0];
 
   io_close_directory();
 
