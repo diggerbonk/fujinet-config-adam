@@ -16,9 +16,11 @@
 // # of files to display on the page. Moved from select_file.c to here, for Atari.
 #define ENTRIES_PER_PAGE 16
 
+#define COLOR_BACKGROUND 0x00
+#define COLOR_FONT 0x0B
 #define COLOR_SETTING_NETWORK 0x66
 #define COLOR_SETTING_FAILED 0x33
-#define COLOR_SETTING_SUCCESSFUL 0xB4
+#define COLOR_SETTING_SUCCESSFUL 0xB2
 #define COLOR_CHECKING_NETWORK 0x26
 
 // Y position on screen where the list of hosts starts.

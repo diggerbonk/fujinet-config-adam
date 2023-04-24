@@ -21,8 +21,6 @@
 #include "bar.h"
 #include "input.h"
 
-//#define DODLIST 1
-
 unsigned char *video_ptr;  // a pointer to the memory address containing the screen contents
 unsigned char *cursor_ptr; // a pointer to the current cursor position on the screen
 char _visibleEntries;
@@ -40,7 +38,7 @@ _screen active_screen = SCREEN_HOSTS_AND_DEVICES;
 
 void config_dlist =
     {
-        DL_DLI(DL_BLK8),              // 0x00 (8 Blank Scanlines)
+        DL_BLK8,              // 0x00 (8 Blank Scanlines)
         DL_BLK8,              // 0x01 (8 Blank Scanlines)
         DL_BLK8,              // 0x02 (8 Blank Scanlines)
         DL_LMS(DL_CHR40x8x1), // 0x03 Line 0 (first line of displayable text, will start at coordinates 0,0)
@@ -62,7 +60,7 @@ void config_dlist =
         DL_CHR40x8x1,         // 0x14  Line 15
         DL_CHR40x8x1,         // 0x15  Line 16
         DL_CHR40x8x1,         // 0x16  Line 17
-        DL_DLI(DL_CHR40x8x1),         // 0x17  Line 18
+        DL_CHR40x8x1,         // 0x17  Line 18
         DL_CHR40x8x1,         // 0x18  Line 19
         DL_CHR40x8x1,         // 0x19  Line 20
         DL_CHR40x8x1,         // 0x1a  Line 21
@@ -73,37 +71,6 @@ void config_dlist =
         DL_JVB,               // Signal to ANTIC end of DISPLAY_LIST has been reached and loop back to the beginning.  The jump to the begining is located at the next two bits defined below.
         DISPLAY_LIST          // 0x1f, 0x20  Memory address containing the entire display list.
 };
-
-#ifdef DODLIST
-void dli_routine2(void);
-void dli_routine1(void)
-{
-    asm("pha");
-    asm("txa");
-    asm("pha");
-    *(unsigned char*)0xD40A = 4;
-    *(unsigned char*)0xd018 = 0;
-    OS.vdslst = &dli_routine2;
-    asm("pla");
-    asm("tax");
-    asm("pla");
-    asm("rti");
-}
-
-void dli_routine2(void)
-{
-    asm("pha");
-    asm("txa");
-    asm("pha");
-    *(unsigned char*)0xD40A  = 4;
-    *(unsigned char*)0xd018 = 6;
-    OS.vdslst = &dli_routine1;
-    asm("pla");
-    asm("tax");
-    asm("pla");
-    asm("rti");
-}
-#endif
 
 // Patch to the character set to add things like the folder icon and the wifi-signal-strength bars.
 // Each new character is 8-bytes.
@@ -116,7 +83,7 @@ unsigned char fontPatch[64] = {
     0    ,204  ,205  ,195  ,255  ,255  ,255  ,0,    // CH_BINARY
     0    ,48   ,96   ,206  ,115  ,6    ,12   ,0,    // CH_LINK
     255  ,0    ,0    ,0    ,0    ,0    ,0    ,255,  // ?? where'd it go?
-    0    ,0    ,24   ,60  ,60  ,24   ,0    ,0       // CH_OTHER
+    0    ,0    ,0    ,0    ,0    ,0    ,0    ,0       // CH_OTHER
 };
 
 void set_active_screen(unsigned char screen)
@@ -520,7 +487,7 @@ void screen_select_file_display_entry(unsigned char y, char *e, char entryType)
   if (entryType > 0)
   {
     if (entryType == 1) screen_puts(1,FILES_START_Y+y,CH_FOLDER);
-    else if (entryType == 2) screen_puts(1,FILES_START_Y+y,CH_BINARY);
+    else if (entryType == 2) screen_puts(1,FILES_START_Y+y,CH_OTHER);
     else if (entryType == 3) screen_puts(1,FILES_START_Y+y,CH_LINK);
     else screen_puts(1,FILES_START_Y+y,CH_OTHER);
     screen_puts(3, FILES_START_Y + y, e);
@@ -793,16 +760,11 @@ void screen_init(void)
   memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist)); // copy display list to $0600
   OS.sdlst = (void *)DISPLAY_LIST;                                   // and use it.
 
-#ifdef DODLIST
-  OS.vdslst = &dli_routine1;
-  *(unsigned char*) 0xD40E = 192;
-#endif
-
-  OS.color0=0;  // PF color 0
-  OS.color1=12; // Text color
-  OS.color2=0;  // Background color
-  OS.color3=0;  // PF color 3
-  OS.color4=0;  // Frame color
+  OS.color0=COLOR_BACKGROUND;  // PF color 0
+  OS.color1=COLOR_FONT;        // Text color
+  OS.color2=COLOR_BACKGROUND;  // Background color
+  OS.color3=COLOR_BACKGROUND;  // PF color 3
+  OS.color4=COLOR_BACKGROUND;  // Frame color
 
   video_ptr = (unsigned char *)(DISPLAY_MEMORY);                     // assign the value of DISPLAY_MEMORY to video_ptr
 
