@@ -25,7 +25,7 @@ void bar_clear(bool old)
  */
 void bar_set_color(unsigned char c)
 {
-  OS.pcolr0=OS.pcolr1=OS.pcolr2=OS.pcolr3=0x06;
+  OS.pcolr0=OS.pcolr1=OS.pcolr2=OS.pcolr3=c;
 }
 
 /**
