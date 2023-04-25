@@ -254,7 +254,12 @@ void select_file_choose(char visibleEntries)
   while (sf_subState == SF_CHOOSE)
   {
     sf_subState = input_select_file_choose();
-    select_display_long_filename();
+    if (sf_subState == SF_SELECTED) {
+      k = select_file_type();
+      if (k == 0) sf_subState = SF_CHOOSE;
+      else if (k==1) sf_subState = SF_ADVANCE_FOLDER;
+      else sf_subState = SF_DONE;
+    }
   }
 }
 
