@@ -66,8 +66,6 @@ void config_dlist =
         DL_CHR40x8x1,         // 0x1a  Line 21
         DL_CHR40x8x1,         // 0x1b  Line 22
         DL_CHR40x8x1,         // 0x1c  Line 23
-//        DL_CHR40x8x1,         // 0x1d  Line 24
-//        DL_CHR40x8x1,         // 0x1e  Line 25
         DL_JVB,               // Signal to ANTIC end of DISPLAY_LIST has been reached and loop back to the beginning.  The jump to the begining is located at the next two bits defined below.
         DISPLAY_LIST          // 0x1f, 0x20  Memory address containing the entire display list.
 };
