@@ -123,15 +123,6 @@ void screen_append(char *s)
   }
 }
 
-void screen_append_mx(char *s, unsigned char mx)
-{
-  while (*s != 0 && mx > 0) {
-    put_char(*s);
-    ++s;
-    mx--;
-  }
-}
-
 void screen_puts(unsigned char x, unsigned char y, char *s)
 {
   set_cursor(x, y);
