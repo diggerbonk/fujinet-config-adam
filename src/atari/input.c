@@ -109,7 +109,7 @@ void input_line_hosts_and_devices_host_slot(unsigned char i, unsigned char o, ch
 
 void input_line_filter(char *c)
 {
-  _screen_input(5, 2, c, 32);
+  _screen_input(8, 21, c, 32);
 }
 
 unsigned char input_select_file_new_type(void)

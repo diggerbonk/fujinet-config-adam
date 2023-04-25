@@ -413,7 +413,7 @@ void screen_select_file_display(char *p, char *f)
 
   // Filter
   screen_puts(1, 21, "Filter:");
-  screen_puts(10, 21, f);
+  screen_puts(8, 21, f);
 
   // Clear out the file area
   for (i = FILES_START_Y; i < FILES_START_Y + ENTRIES_PER_PAGE; i++)
@@ -421,9 +421,8 @@ void screen_select_file_display(char *p, char *f)
     screen_clear_line(i);
   }
 
-  // clear Prev/next page lines. Sometimes they're left on the screen during directory devance.
-  //screen_clear_line(FILES_START_Y + ENTRIES_PER_PAGE);
-  //screen_clear_line(FILES_START_Y - 1);
+  // clear Prev/next page ticks
+  screen_puts(34,3,"\x12\x12\x12\x12");
 }
 
 void screen_select_file_display_long_filename(char *e)
@@ -444,31 +443,20 @@ void screen_select_file_filter(void)
 
 void screen_select_file_next(void)
 {
-  /*if (dir_eof == false)
+  if (pos == 0)  screen_puts(34,3,"\x12  "); // clear previous page
+  if (dir_eof == false)
   {
-    screen_puts(0, FILES_START_Y + ENTRIES_PER_PAGE, CH_KEY_GT "Next Page");
+    screen_puts(35,3,"Pg\x7F"); // next page
   }
-  if (pos == 0)
-  {
-    // We're on the first page, clear the line with the "Previous Page" text.
-    screen_clear_line(FILES_START_Y - 1);
-  }*/
 }
 
 void screen_select_file_prev(void)
 {
-/*
+  if (dir_eof  == true) screen_puts(37,3,"\x12"); // clear next page
   if (pos > 0)
   {
-    screen_puts(0, FILES_START_Y - 1, CH_KEY_LT "Previous Page");
+    screen_puts(34,3,"\x7EPg"); // previous page
   }
-
-  if (dir_eof == true)
-  {
-    // We're on the last page, clear the line with the "Next Page" text.
-    screen_clear_line(FILES_START_Y + ENTRIES_PER_PAGE);
-  }
-*/
 }
 
 void screen_select_file_display_entry(unsigned char y, char *e, char entryType)
