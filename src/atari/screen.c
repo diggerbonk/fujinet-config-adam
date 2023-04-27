@@ -382,7 +382,7 @@ void screen_select_file(void)
   screen_clear();
   bar_clear(false);
 
-  screen_puts(0, 3, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
+  screen_puts(0, 2, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
 
 
   screen_puts(0, 21, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
@@ -411,12 +411,12 @@ void screen_select_file_display(char *p, char *f)
 {
   unsigned char i;
   // Host
-  screen_puts(0, 0, "Host:");
-  screen_puts(5, 0, selected_host_name);
+  screen_puts(1, 0, selected_host_name);
+  screen_puts(1 + strlen(selected_host_name),0, p);
 
   // Path - the path can wrap to line 4 (maybe 5?) so clear both to be safe.
-  screen_puts(0, 1, "Path:");
-  screen_puts(5, 1, p);
+  //screen_puts(0, 1, "Path:");
+  //screen_puts(5, 1, p);
 
   // Filter
   //screen_puts(8, 22, CH_KEY_F "ilter:");
@@ -429,7 +429,7 @@ void screen_select_file_display(char *p, char *f)
   }
 
   // clear Prev/next page ticks
-  screen_puts(34,3,"\x12\x12\x12\x12");
+  screen_puts(34,2,"\x12\x12\x12\x12");
 }
 
 void screen_select_file_display_long_filename(char *e)
@@ -450,19 +450,19 @@ void screen_select_file_filter(void)
 
 void screen_select_file_next(void)
 {
-  if (pos == 0)  screen_puts(34,3,"\x12  "); // clear previous page
+  if (pos == 0)  screen_puts(34,2,"\x12  "); // clear previous page
   if (dir_eof == false)
   {
-    screen_puts(35,3,"Pg\x7F"); // next page
+    screen_puts(35,2,"Pg\x7F"); // next page
   }
 }
 
 void screen_select_file_prev(void)
 {
-  if (dir_eof  == true) screen_puts(37,3,"\x12"); // clear next page
+  if (dir_eof  == true) screen_puts(37,2,"\x12"); // clear next page
   if (pos > 0)
   {
-    screen_puts(34,3,"\x7EPg"); // previous page
+    screen_puts(34,2,"\x7EPg"); // previous page
   }
 }
 
