@@ -255,8 +255,13 @@ void select_file_choose(char visibleEntries)
   {
     sf_subState = input_select_file_choose();
     if (sf_subState == SF_SELECTED) {
+      pos += (bar_get() - FILES_START_Y);
       k = select_file_type();
-      if (k == 0) sf_subState = SF_CHOOSE;
+      if (k == 0) 
+      {
+        sf_subState = SF_CHOOSE;
+        pos -= (bar_get() - FILES_START_Y);
+      }
       else if (k==1) sf_subState = SF_ADVANCE_FOLDER;
       else sf_subState = SF_DONE;
     }

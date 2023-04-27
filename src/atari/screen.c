@@ -383,21 +383,28 @@ void screen_select_file(void)
   bar_clear(false);
 
   screen_puts(0, 3, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
-  screen_puts(0, 20, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
+
+
+  screen_puts(0, 21, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
+
+  screen_puts(28, 22, CH_KEY_NAV);
+  screen_puts(28, 23, "|Move");
+
+  screen_puts(33, 22, "|" CH_KEY_RETURN);
+  screen_puts(33, 23, "|Choose");
 
   if (copy_mode == false)
   {
-    screen_puts(0, 22,
-                CH_KEY_LEFT CH_KEY_DELETE "Up Dir" CH_KEY_N "ew" CH_KEY_F "ilter" CH_KEY_C "opy");
+    screen_puts(0, 22, CH_INV_F "ilter:");
+    screen_puts(0, 23,
+        CH_KEY_C "opy " CH_INV_N "ew " CH_KEY_OPTION " Boot " CH_KEY_ESC " Back");
   }
   else
   {
-    screen_puts(0, 22,
-                CH_KEY_LEFT CH_KEY_DELETE "Up Dir" CH_KEY_N "ew" CH_KEY_F "ilter" CH_KEY_C "Do It!");
+    screen_puts(0, 22, CH_KEY_C "Complete Copy");
+    screen_puts(0, 23,
+      CH_INV_C "opy " CH_INV_N "ew " CH_KEY_RETURN "Choose " CH_KEY_OPTION "Boot " CH_KEY_ESC "ape");
   }
-  screen_puts(0, 23,
-              CH_KEY_RIGHT CH_KEY_RETURN "Choose" CH_KEY_OPTION "Boot" CH_KEY_ESC "Abort");
-
 }
 
 void screen_select_file_display(char *p, char *f)
@@ -412,8 +419,8 @@ void screen_select_file_display(char *p, char *f)
   screen_puts(5, 1, p);
 
   // Filter
-  screen_puts(1, 21, "Filter:");
-  screen_puts(8, 21, f);
+  //screen_puts(8, 22, CH_KEY_F "ilter:");
+  screen_puts(7, 22, f);
 
   // Clear out the file area
   for (i = FILES_START_Y; i < FILES_START_Y + ENTRIES_PER_PAGE; i++)
