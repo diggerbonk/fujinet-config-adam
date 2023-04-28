@@ -191,6 +191,8 @@ extern unsigned char *cursor_ptr;
 #define CH_KEY_GT CH_KEY_LABEL_L CH_INV_GT CH_KEY_LABEL_R
 #define CH_KEY_ESC CH_INV_E CH_INV_S CH_INV_C 
 
+#define HORIZONTAL_LINE  "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12"
+
 /**
  * Define key code to detect during keyboard capture
  */

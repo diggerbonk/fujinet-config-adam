@@ -126,6 +126,7 @@ void screen_append(char *s)
 void screen_puts(unsigned char x, unsigned char y, char *s)
 {
   set_cursor(x, y);
+  gotoxy(x,y);
   screen_append(s);
 }
 
@@ -280,8 +281,8 @@ void screen_show_info(int printerEnabled, AdapterConfig *ac)
   screen_clear();
   bar_clear(false);
 
-
-  screen_puts(0, 0, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 FUJINET CONFIG \x12\x12");
+  screen_puts(0, 0, HORIZONTAL_LINE);
+  screen_puts(23, 0 , " FUJINET CONFIG ");
   screen_puts(7, 17,
               CH_KEY_LABEL_L CH_INV_C CH_KEY_LABEL_R "RECONNECT " CH_KEY_LABEL_L CH_INV_S CH_KEY_LABEL_R "CHANGE SSID");
   screen_puts(9, 19, "Any other key to return");
@@ -382,16 +383,14 @@ void screen_select_file(void)
   screen_clear();
   bar_clear(false);
 
-  screen_puts(0, 2, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
-
-
-  screen_puts(0, 21, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12");
+  screen_puts(0, 2, HORIZONTAL_LINE);
+  screen_puts(0, 21, HORIZONTAL_LINE);
 
   screen_puts(28, 22, CH_KEY_NAV);
   screen_puts(28, 23, "|Move");
 
   screen_puts(33, 22, "|" CH_KEY_RETURN);
-  screen_puts(33, 23, "|Choose");
+  screen_puts(33, 23, "|Select");
 
   if (copy_mode == false)
   {
@@ -548,9 +547,11 @@ void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
   screen_clear();
   bar_clear(false);
 
-
-  screen_puts(0, 0, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 TNFS HOST LIST \x12\x12");
-  screen_puts(0, 11, "\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 DRIVE SLOTS \x12\x12");
+  screen_puts(0, 0, HORIZONTAL_LINE);
+screen_puts(0, 0, "\x20 \x28 \x30 \x3e \x48 \x68");
+  screen_puts(23, 0, " TNFS HOST LIST ");
+  screen_puts(0, 11, HORIZONTAL_LINE);
+  screen_puts(26, 11, " DRIVE SLOTS ");
 
   while (retry > 0)
   {
@@ -625,7 +626,8 @@ void screen_hosts_and_devices_devices(void)
   screen_clear_line(23);
 
   screen_clear_line(11);
-  screen_puts(0, 11,"\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12\x12 DRIVE SLOTS \x12\x12");
+  screen_puts(0, 11, HORIZONTAL_LINE);
+  screen_puts(26, 11, " DRIVE SLOTS ");
 
   screen_puts(3, 22,
               CH_KEY_1TO8 "Slot" CH_KEY_LABEL_L CH_INV_E CH_KEY_LABEL_R "ject" CH_KEY_LABEL_L CH_INV_C CH_INV_L CH_INV_E CH_INV_A CH_INV_R CH_KEY_LABEL_R "All Slots");
