@@ -21,54 +21,12 @@
 #include "bar.h"
 #include "input.h"
 
-unsigned char *video_ptr;  // a pointer to the memory address containing the screen contents
+//unsigned char *video_ptr;  // a pointer to the memory address containing the screen contents
 unsigned char *cursor_ptr; // a pointer to the current cursor position on the screen
 char _visibleEntries;
 extern bool copy_mode;
 char text_empty[] = "Empty";
 char fn[256];
-
-// The currently active screen (basically each time a different displaylist is used that will be considered a screen)
-// Used by 'set_cursor' so it knows the layout of the screen and can properly figure out the memory offset needed whengiven an (x, y) coordinate pair.
-//
-_screen active_screen = SCREEN_HOSTS_AND_DEVICES;
-
-// Set up the initial display list.
-// Note: Using 25 lines in this version vs 23 in the original config (2 additional at the bottom).
-
-void config_dlist =
-    {
-        DL_BLK8,              // 0x00 (8 Blank Scanlines)
-        DL_BLK8,              // 0x01 (8 Blank Scanlines)
-        DL_BLK8,              // 0x02 (8 Blank Scanlines)
-        DL_LMS(DL_CHR40x8x1), // 0x03 Line 0 (first line of displayable text, will start at coordinates 0,0)
-        DISPLAY_MEMORY,       // 0x04 and 0x05 This is the high order bit location of the display list.  Defined in screen.h
-        DL_CHR40x8x1,         // 0x06  Line 1
-        DL_CHR40x8x1,         // 0x07  Line 2
-        DL_CHR40x8x1,         // 0x08  Line 3
-        DL_CHR40x8x1,         // 0x09  Line 4
-        DL_CHR40x8x1,         // 0x0a  Line 5
-        DL_CHR40x8x1,         // 0x0b  Line 6
-        DL_CHR40x8x1,         // 0x0c  Line 7
-        DL_CHR40x8x1,         // 0x0d  Line 8
-        DL_CHR40x8x1,         // 0x0e  Line 9
-        DL_CHR40x8x1,         // 0x0f  Line 10
-        DL_CHR40x8x1,         // 0x10  Line 11
-        DL_CHR40x8x1,         // 0x11  Line 12
-        DL_CHR40x8x1,         // 0x12  Line 13
-        DL_CHR40x8x1,         // 0x13  Line 14
-        DL_CHR40x8x1,         // 0x14  Line 15
-        DL_CHR40x8x1,         // 0x15  Line 16
-        DL_CHR40x8x1,         // 0x16  Line 17
-        DL_CHR40x8x1,         // 0x17  Line 18
-        DL_CHR40x8x1,         // 0x18  Line 19
-        DL_CHR40x8x1,         // 0x19  Line 20
-        DL_CHR40x8x1,         // 0x1a  Line 21
-        DL_CHR40x8x1,         // 0x1b  Line 22
-        DL_CHR40x8x1,         // 0x1c  Line 23
-        DL_JVB,               // Signal to ANTIC end of DISPLAY_LIST has been reached and loop back to the beginning.  The jump to the begining is located at the next two bits defined below.
-        DISPLAY_LIST          // 0x1f, 0x20  Memory address containing the entire display list.
-};
 
 // Patch to the character set to add things like the folder icon and the wifi-signal-strength bars.
 // Each new character is 8-bytes.
@@ -84,14 +42,9 @@ unsigned char fontPatch[64] = {
     0    ,0    ,0    ,0    ,0    ,0    ,0    ,0       // CH_OTHER
 };
 
-void set_active_screen(unsigned char screen)
-{
-  active_screen = screen;
-}
-
 void set_cursor(unsigned char x, unsigned char y)
 {
-  cursor_ptr = video_ptr + x + (y * 40);
+  gotoxy(x,y);
 }
 
 /**********************
@@ -99,35 +52,17 @@ void set_cursor(unsigned char x, unsigned char y)
  */
 void put_char(char c)
 {
-  char offset = 0;
-  if (c < 32)
-  {
-    offset = 64;
-  }
-  else if (c < 96)
-  {
-    offset = -32;
-  }
-  else if (c < 128)
-  {
-    offset = 0;
-  }
-  POKE(cursor_ptr++, c + offset); // Insert into the locaiton in memory for next bit in cursor_ptr the ATASCI character.  c+offset is the ATASCI character desired to be displayed.
+  cputc(c);
 }
 
 void screen_append(char *s)
 {
-  while (*s != 0) {
-    put_char(*s);
-    ++s;
-  }
+  cputs(s);
 }
 
 void screen_puts(unsigned char x, unsigned char y, char *s)
 {
-  set_cursor(x, y);
-  gotoxy(x,y);
-  screen_append(s);
+  cputsxy(x,y,s);
 }
 
 void font_init()
@@ -143,7 +78,6 @@ void font_init()
 
 void screen_mount_and_boot()
 {
-  set_active_screen(SCREEN_MOUNT_AND_BOOT);
   screen_clear();
   bar_clear(false);
 }
@@ -154,7 +88,6 @@ void screen_set_wifi(AdapterConfig *ac)
   unsigned char i = 0;
   unsigned char x = 13;
 
-  set_active_screen(SCREEN_SET_WIFI);
   screen_clear();
   bar_clear(false);
   screen_puts(0, 0, "WELCOME TO #FUJINET!");
@@ -277,7 +210,6 @@ void itoa_hex(unsigned char val, char *buf)
 void screen_show_info(int printerEnabled, AdapterConfig *ac)
 {
   unsigned char i;
-  set_active_screen(SCREEN_SHOW_INFO);
   screen_clear();
   bar_clear(false);
 
@@ -312,7 +244,6 @@ void screen_select_slot(char *e)
   unsigned int *s;
   unsigned char d[40];
 
-  set_active_screen(SCREEN_SELECT_SLOT);
 
   screen_clear();
 
@@ -379,7 +310,6 @@ void screen_select_slot_build_eos_directory_creating(void)
 
 void screen_select_file(void)
 {
-  set_active_screen(SCREEN_SELECT_FILE);
   screen_clear();
   bar_clear(false);
 
@@ -526,8 +456,7 @@ void screen_select_file_new_creating(void)
 
 void screen_clear_line(unsigned char y)
 {
-  set_cursor(0, y);          // move the cursor X position 0 and Y position.
-  memset(cursor_ptr, 0, 40); // fill the memory with spaces.  The zeros in the memory addresses are interpreted as spaces on the console
+  cclearxy(0,y,40);
 }
 
 void screen_error(const char *msg)
@@ -542,13 +471,11 @@ void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
   unsigned char i;
   char temp[10];
 
-  set_active_screen(SCREEN_HOSTS_AND_DEVICES);
 
   screen_clear();
   bar_clear(false);
 
   screen_puts(0, 0, HORIZONTAL_LINE);
-screen_puts(0, 0, "\x20 \x28 \x30 \x3e \x48 \x68");
   screen_puts(23, 0, " TNFS HOST LIST ");
   screen_puts(0, 11, HORIZONTAL_LINE);
   screen_puts(26, 11, " DRIVE SLOTS ");
@@ -601,8 +528,7 @@ screen_puts(0, 0, "\x20 \x28 \x30 \x3e \x48 \x68");
 
 void screen_clear()
 {
-  cursor_ptr = video_ptr;                       // Assign the current position of the cursor position address to the address of the video screen
-  memset(video_ptr, 0, GRAPHICS_0_SCREEN_SIZE); // Fill the memory address with blanks of the size of the screen; in this case Atari graphics mode 0 size.
+  clrscr();
 }
 
 // Show the keys that are applicable when we are on the Hosts portion of the screen.
@@ -644,7 +570,8 @@ void screen_hosts_and_devices_host_slots(HostSlot *h)
   {
     set_cursor(2, slotNum + HOSTS_START_Y);
     put_char(slotNum + '1');
-    cursor_ptr += 2;
+    set_cursor(5,  slotNum + HOSTS_START_Y);
+    
 
     screen_append((hostSlots[slotNum][0] != 0x00) ? (char *)hostSlots[slotNum] : text_empty);
   }
@@ -743,17 +670,6 @@ void screen_hosts_and_devices_long_filename(char *f)
 
 void screen_init(void)
 {
-  memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist)); // copy display list to $0600
-  OS.sdlst = (void *)DISPLAY_LIST;                                   // and use it.
-
-  OS.color0=COLOR_BACKGROUND;  // PF color 0
-  OS.color1=COLOR_FONT;        // Text color
-  OS.color2=COLOR_BACKGROUND;  // Background color
-  OS.color3=COLOR_BACKGROUND;  // PF color 3
-  OS.color4=COLOR_BACKGROUND;  // Frame color
-
-  video_ptr = (unsigned char *)(DISPLAY_MEMORY);                     // assign the value of DISPLAY_MEMORY to video_ptr
-
   font_init();
   bar_setup_regs();
   bar_clear(false);
@@ -790,7 +706,6 @@ void screen_perform_copy(char *sh, char *p, char *dh, char *dp)
 
 void screen_connect_wifi(NetConfig *nc)
 {
-  set_active_screen(SCREEN_CONNECT_WIFI);
   screen_clear();
   bar_clear(false);
 
@@ -801,30 +716,32 @@ void screen_connect_wifi(NetConfig *nc)
 
 int _screen_input(unsigned char x, unsigned char y, char *s, unsigned char maxlen)
 {
-  unsigned char k, o;
-  unsigned char *input_start_ptr;
+  unsigned char k, o, start, cpos;
 
+  cpos = x;
   o = strlen(s);                // assign to local var the size of s which contains the current string
   set_cursor(x, y);             // move the cusor to coordinates x,y
-  input_start_ptr = cursor_ptr; // assign the value currently in cursor_ptr to local var input_start
   screen_append(s);             // call screen_append function and pass by value (a copy) the contents of s
 
-  POKE(cursor_ptr, 0x80); // turn on cursor
-
+  cursor(1);
   // Start capturing the keyboard input into local var k
   do
   {
     k = cgetc(); // Capture keyboard input into k
 
     if (k == KCODE_ESCAPE) // KCODE_ESCAPE is the ATASCI code for the escape key which is commonly used to cancel.
+    {
+      cursor(0);
       return -1;
+    }
 
     if (k == KCODE_BACKSP) // KCODE_BACKSP is the ATASCI backspace key.  This if clause test for backspace and updates cursor_ptr to the remainder of contents upto the last backspace
     {
-      if (cursor_ptr > input_start_ptr) // execute only if cursor_ptr is greater than input_start_ptr
+      if (wherex() > x) // execute only if cursor_ptr is greater than input_start_ptr
       {
-        s[--o] = 0;                  //
-        POKEW(--cursor_ptr, 0x0080); // move the last bit of the cursor_ptr back one and write the location of the cursor_ptr contents to user zero page address 0x80
+        s[--o] = 0; 
+        cputcxy(wherex()-1,wherey(),' ');
+        gotox(wherex()-1);
       }
     }
     else if ((k > 0x1F) && (k < 0x80)) // Display printable ascii to screen
@@ -833,11 +750,10 @@ int _screen_input(unsigned char x, unsigned char y, char *s, unsigned char maxle
       {
         put_char(k);
         s[o++] = k;
-        POKE(cursor_ptr, 0x80);
       }
     }
   } while (k != KCODE_RETURN); // Continue to capture keyboard input until return (0x9B)
-  POKE(cursor_ptr, 0x00);      // clear cursor
+  cursor(0);
 }
 
 

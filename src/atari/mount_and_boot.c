@@ -16,7 +16,6 @@ void mount_and_boot(void)
     char temp[40];
 
     screen_mount_and_boot();
-    set_active_screen(SCREEN_MOUNT_AND_BOOT);
 
     io_get_device_slots(&deviceSlots[0]);
     if (io_error())
