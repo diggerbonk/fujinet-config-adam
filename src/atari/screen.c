@@ -399,11 +399,11 @@ void screen_select_file_display_entry(unsigned char y, char *e, char entryType)
 {
   if (entryType > 0)
   {
-    if (entryType == 1) screen_puts(1,FILES_START_Y+y,CH_FOLDER);
-    else if (entryType == 2) screen_puts(1,FILES_START_Y+y,CH_OTHER);
-    else if (entryType == 3) screen_puts(1,FILES_START_Y+y,CH_LINK);
-    else screen_puts(1,FILES_START_Y+y,CH_OTHER);
-    screen_puts(3, FILES_START_Y + y, e);
+    if (entryType == 1) screen_puts(0,FILES_START_Y+y,CH_FOLDER);
+    else if (entryType == 2) screen_puts(0,FILES_START_Y+y,CH_OTHER);
+    else if (entryType == 3) screen_puts(0,FILES_START_Y+y,CH_LINK);
+    else screen_puts(0,FILES_START_Y+y,CH_OTHER);
+    screen_puts(2, FILES_START_Y + y, e);
   }
   else 
   {

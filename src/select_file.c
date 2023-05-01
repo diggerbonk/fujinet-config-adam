@@ -87,6 +87,7 @@ unsigned char entry_size[ENTRIES_PER_PAGE];
 unsigned short entry_timer = ENTRY_TIMER_DUR;
 bool long_entry_displayed = false;
 bool copy_mode = false;
+unsigned char selected_file_type = 0;
 
 extern unsigned char copy_host_slot;
 
@@ -247,8 +248,6 @@ void select_file_filter(void)
 
 void select_file_choose(char visibleEntries)
 {
-  char k = 0;
-
   screen_select_file_choose(visibleEntries);
 
   while (sf_subState == SF_CHOOSE)
@@ -256,13 +255,14 @@ void select_file_choose(char visibleEntries)
     sf_subState = input_select_file_choose();
     if (sf_subState == SF_SELECTED) {
       pos += (bar_get() - FILES_START_Y);
-      k = select_file_type();
-      if (k == 0) 
+      selected_file_type = select_file_type();
+      if (selectd_file_type == 0) 
       {
         sf_subState = SF_CHOOSE;
         pos -= (bar_get() - FILES_START_Y);
       }
-      else if (k==1) sf_subState = SF_ADVANCE_FOLDER;
+      else if (selected_file_type==3) sf_subState = SF_LINK;
+      else if (selected_file_type==1) sf_subState = SF_ADVANCE_FOLDER;
       else sf_subState = SF_DONE;
     }
   }
@@ -399,8 +399,6 @@ void select_file_done(void)
 {
   if (copy_mode == true)
     state = PERFORM_COPY;
-  //  else if (select_file_is_folder())
-  //    sf_subState=SF_ADVANCE_FOLDER;
   else
     state = SELECT_SLOT;
 }
