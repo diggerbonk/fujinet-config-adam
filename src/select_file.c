@@ -87,6 +87,7 @@ unsigned char entry_size[ENTRIES_PER_PAGE];
 unsigned short entry_timer = ENTRY_TIMER_DUR;
 bool long_entry_displayed = false;
 bool copy_mode = false;
+unsigned char selected_file_type = 0;
 
 extern unsigned char copy_host_slot;
 
@@ -254,7 +255,21 @@ void select_file_choose(char visibleEntries)
   while (sf_subState == SF_CHOOSE)
   {
     sf_subState = input_select_file_choose();
-    select_display_long_filename();
+    if (sf_subState == SF_SELECTED) {
+      pos += (bar_get() - FILES_START_Y );
+      selected_file_type = select_file_type();
+      if (selected_file_type == 0) 
+      {
+        sf_subState = SF_CHOOSE;
+        pos -= (bar_get() - FILES_START_Y);
+      }
+      else 
+      {
+        //select_display_long_filename();
+        if (selected_file_type == 1) sf_subState = SF_ADVANCE_FOLDER;
+        else sf_subState = SF_DONE;
+      }
+    }
   }
 }
 
@@ -307,16 +322,24 @@ void select_file_devance(void)
 
 unsigned char select_file_is_folder(void)
 {
+  unsigned char result = select_file_type();
+  if (result == 1) return true;
+  else return false;
+}
+
+unsigned char select_file_type(void)
+{
   char *e;
   unsigned char result;
-
   io_open_directory(selected_host_slot, path, filter);
 
   io_set_directory_position(pos);
 
-  e = io_read_directory(128, 0);
+  //e = io_read_directory(128, 0);
 
-  result = (strrchr(e, '/') != NULL);
+  //result = (strrchr(e, '/') != NULL);
+  e = io_read_directory(16, 0x40); // 0x40 -> get type info
+  result = e[0];
 
   io_close_directory();
 
