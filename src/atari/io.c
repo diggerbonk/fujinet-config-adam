@@ -45,10 +45,11 @@ void io_init(void)
 {
   OS.noclik = 0xFF;
   OS.shflok = 0;
-  OS.color0 = 0x9f;
-  OS.color1 = 0x0f;
-  OS.color2 = 0x90;
-  OS.color4 = 0x90;
+  OS.color0 = 0x00;
+  OS.color1 = COLOR_FONT; // gr.0 font
+  OS.color3 = 0x00; 
+  OS.color2 = COLOR_BACKGROUND; // background
+  OS.color4 = COLOR_BACKGROUND; // frame
   OS.coldst = 1;
   OS.sdmctl = 0; // Turn off screen
 }

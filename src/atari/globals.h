@@ -17,9 +17,9 @@
 #define ENTRIES_PER_PAGE 18
 
 #define COLOR_BACKGROUND 0x02
-#define COLOR_FONT 0x0E
+#define COLOR_FONT 0x0c
 #define COLOR_SETTING_FAILED 0x33
-#define COLOR_SETTING_SUCCESSFUL 0x24
+#define COLOR_SETTING_SUCCESSFUL 0x94
 
 // Y position on screen where the list of hosts starts.
 #define HOSTS_START_Y 2
