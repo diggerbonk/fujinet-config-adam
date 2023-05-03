@@ -261,11 +261,35 @@ void select_file_choose(char visibleEntries)
         sf_subState = SF_CHOOSE;
         pos -= (bar_get() - FILES_START_Y);
       }
-//      else if (selected_file_type==3) sf_subState = SF_LINK;
+      else if (selected_file_type==3) sf_subState = SF_LINK;
       else if (selected_file_type==1) sf_subState = SF_ADVANCE_FOLDER;
       else sf_subState = SF_DONE;
     }
   }
+}
+
+void select_file_link(void)
+{
+  char *e;
+  char tnfsHostname[128];
+  bar_clear(false);
+
+  io_open_directory(selected_host_slot, path, filter);
+
+  io_set_directory_position(pos);
+
+  e = io_read_directory(128, 1);
+
+  strcpy(tnfsHostname, e); // append directory entry to end of current path
+
+  io_close_directory();
+
+  strcpy(hostSlots[NUM_HOST_SLOTS-1], tnfsHostname);
+  io_put_host_slots(&hostSlots[0]);
+
+  selected_host_slot = NUM_HOST_SLOTS-1;
+  sf_subState = SF_INIT;
+
 }
 
 void select_file_advance(void)
@@ -430,6 +454,9 @@ void select_file(void)
       break;
     case SF_FILTER:
       select_file_filter();
+      break;
+    case SF_LINK:
+      select_file_link();
       break;
     case SF_ADVANCE_FOLDER:
       select_file_advance();
