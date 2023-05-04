@@ -395,7 +395,7 @@ void screen_select_file_prev(void)
   }
 }
 
-void screen_select_file_display_entry(unsigned char y, char *e, char entryType)
+void screen_select_file_display_entry(unsigned char y, char *e, unsigned entryType)
 {
   if (entryType > 0)
   {

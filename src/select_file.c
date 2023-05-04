@@ -158,7 +158,7 @@ unsigned char select_file_display(void)
     {
       entry_size[i] = strlen(e+1);
       visibleEntries++; // could filter on e[0] to deal with message entries like on FUJINET.PL
-      screen_select_file_display_entry(i, e+1, e[0]);
+      screen_select_file_display_entry(i, e+2, e[0]*16 + e[1]);
     }
   }
 
@@ -346,17 +346,17 @@ unsigned char select_file_is_folder(void)
     else return false;
 }
 
-unsigned char select_file_type(void)
+unsigned select_file_type(void)
 {
   char *e;
-  unsigned char result;
+  unsigned result;
 
   io_open_directory(selected_host_slot, path, filter);
 
   io_set_directory_position(pos);
 
   e = io_read_directory(16, 0x40); // 0x40 -> get type info
-  result = e[0];
+  result = e[0]*16 + e[1];
 
   io_close_directory();
 
