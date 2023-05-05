@@ -16,7 +16,8 @@
 // # of files to display on the page. Moved from select_file.c to here, for Atari.
 #define ENTRIES_PER_PAGE 18
 
-#define COLOR_BACKGROUND 0x02
+#define COLOR_BACKGROUND 0x00
+#define COLOR_BORDER 0x00
 #define COLOR_FONT 0x0c
 #define COLOR_SETTING_FAILED 0x33
 #define COLOR_SETTING_SUCCESSFUL 0x94
