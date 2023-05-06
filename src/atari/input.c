@@ -460,6 +460,10 @@ SFSubState input_select_file_choose(void)
     }
     return SF_CHOOSE;
   case '+': // left
+    if ( submenu[0] != 0 ) // we're in a sub-menu
+    {
+       return SF_DEVANCE_FOLDER;
+    }
     if ( strlen(path) == 1 && pos <= 0 ) // We're at the root of the filesystem, and we're on the first page - go back to hosts/devices screen.
     {
       state = HOSTS_AND_DEVICES;

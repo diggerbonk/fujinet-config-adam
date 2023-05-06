@@ -76,6 +76,7 @@
 SFSubState sf_subState;
 char path[224];
 char filter[32];
+char submenu[32];
 char source_path[224];
 char source_filter[32];
 char source_filename[128];
@@ -105,6 +106,7 @@ void select_file_init(void)
   memset(path, 0, 256);
   path[0] = '/';
   memset(filter, 0, 32);
+  memset(submenu, 0, 32);
   screen_select_file();
   sf_subState = SF_DISPLAY;
   quick_boot = dir_eof = false;
@@ -137,6 +139,8 @@ unsigned char select_file_display(void)
     state = HOSTS_AND_DEVICES;
     return 0;
   }
+
+  io_open_menu(submenu);
 
   if (pos > 0)
     io_set_directory_position(pos);
@@ -184,10 +188,20 @@ void select_file_set_source_filename(void)
   char entry[128];
 
   io_open_directory(selected_host_slot, path, filter);
+
+  if (io_error()) 
+  {
+    sf_subState = SF_DONE;
+    state = HOSTS_AND_DEVICES;
+    return;
+  }
+
+  io_open_menu(submenu);
   io_set_directory_position(pos);
   strcpy(entry, io_read_directory(128, 0));
   strcat(path, entry);
   strcpy(source_filename, entry);
+  io_close_directory();
 }
 
 void select_display_long_filename(void)
@@ -203,6 +217,15 @@ void select_display_long_filename(void)
     if (long_entry_displayed == false)
     {
       io_open_directory(selected_host_slot, path, filter);
+
+      if (io_error()) 
+      {
+          sf_subState = SF_DONE;
+          state = HOSTS_AND_DEVICES;
+          return;
+      }
+
+      io_open_menu(submenu);
 #ifdef BUILD_ATARI      
       io_set_directory_position(pos + bar_get() - FILES_START_Y);
 #else
@@ -263,9 +286,41 @@ void select_file_choose(char visibleEntries)
       }
       else if (selected_file_type==3) sf_subState = SF_LINK;
       else if (selected_file_type==1) sf_subState = SF_ADVANCE_FOLDER;
+      else if (selected_file_type==4) sf_subState = SF_SUBMENU;
       else sf_subState = SF_DONE;
     }
   }
+}
+
+void select_submenu(void)
+{
+  char *e;
+  char tmpMenuName[32];
+  bar_clear(false);
+
+  io_open_directory(selected_host_slot, path, filter);
+
+  if (io_error()) {
+    sf_subState = SF_DISPLAY;
+    state = HOSTS_AND_DEVICES;
+    return;
+  }
+
+  io_open_menu(submenu);
+
+  io_set_directory_position(pos);
+
+  e = io_read_directory(32, 1);
+
+  strcpy(tmpMenuName, e);
+
+  io_close_directory();
+
+  strcpy(submenu, tmpMenuName);
+  pos = 0;
+  dir_eof = quick_boot = false;
+
+  sf_subState = SF_DISPLAY;   
 }
 
 void select_file_link(void)
@@ -276,11 +331,20 @@ void select_file_link(void)
 
   io_open_directory(selected_host_slot, path, filter);
 
+  if (io_error())
+  {
+      sf_subState = SF_DONE;
+      state = HOSTS_AND_DEVICES;
+      return;
+  }
+ 
+  io_open_menu(submenu);
+
   io_set_directory_position(pos);
 
   e = io_read_directory(128, 1);
 
-  strcpy(tnfsHostname, e); // append directory entry to end of current path
+  strcpy(tnfsHostname, e);
 
   io_close_directory();
 
@@ -300,6 +364,15 @@ void select_file_advance(void)
 
   io_open_directory(selected_host_slot, path, filter);
 
+  if (io_error()) 
+  {
+    sf_subState = SF_DONE;
+    state = HOSTS_AND_DEVICES;
+    return;
+  }
+
+  io_open_menu(submenu);
+
   io_set_directory_position(pos);
 
   e = io_read_directory(128, 1);
@@ -311,13 +384,27 @@ void select_file_advance(void)
   pos = 0;
   dir_eof = quick_boot = false;
 
+  memset(submenu,0,32); // reset menu
+
   sf_subState = SF_DISPLAY; // and display the result.
 }
 
 void select_file_devance(void)
 {
   int i;
-  char *p = strrchr(path, '/'); // find end of directory string (last /)
+  char *p;
+
+  if (submenu[0] != 0) 
+  {
+    // we are in a submenu, leave it
+    pos = 0;
+    memset(submenu,0,32);
+    dir_eof = quick_boot = false;
+    sf_subState = SF_DISPLAY;
+    return;
+  }
+
+  p = strrchr(path, '/'); // find end of directory string (last /)
 
   bar_clear(false);
 
@@ -336,6 +423,8 @@ void select_file_devance(void)
   pos = 0;
   dir_eof = quick_boot = false;
 
+  memset(submenu,0,32); // reset menu;
+
   sf_subState = SF_DISPLAY; // And display the result.
 }
 
@@ -352,6 +441,10 @@ unsigned select_file_type(void)
   unsigned result;
 
   io_open_directory(selected_host_slot, path, filter);
+
+  if (io_error()) return 0;
+
+  io_open_menu(submenu);
 
   io_set_directory_position(pos);
 
@@ -457,6 +550,9 @@ void select_file(void)
       break;
     case SF_LINK:
       select_file_link();
+      break;
+    case SF_SUBMENU:
+      select_submenu();
       break;
     case SF_ADVANCE_FOLDER:
       select_file_advance();

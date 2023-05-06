@@ -228,6 +228,18 @@ void io_mount_host_slot(unsigned char hs)
   }
 }
 
+void io_open_menu(char *m)
+{
+  set_sio_defaults();
+  OS.dcb.dbuf = m;
+  OS.dcb.dcomnd = 0xD0;
+  OS.dcb.dstats = 0x888888880;
+  OS.dcb.dbyt = 32;
+  OS.dcb.daux1 = 0;
+  OS.dcb.daux2 = 0;
+  siov();
+}
+
 void io_open_directory(unsigned char hs, char *p, char *f)
 {
   set_sio_defaults();

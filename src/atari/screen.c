@@ -37,9 +37,9 @@ unsigned char fontPatch[64] = {
     48   ,48   ,48   ,48   ,48   ,48   ,48   ,48,   // WIFI BARS 3
     0    ,120  ,135  ,255  ,255  ,255  ,255  ,0,    // CH_FOLDER
     0    ,204  ,205  ,195  ,255  ,255  ,255  ,0,    // CH_BINARY
-    0    ,48   ,96   ,206  ,115  ,6    ,12   ,0,    // CH_LINK
+    0    ,0    ,112  ,206  ,115  ,14    ,0   ,0,    // CH_LINK
     255  ,0    ,0    ,0    ,0    ,0    ,0    ,255,  // ?? where'd it go?
-    0    ,0    ,0    ,0    ,0    ,0    ,0    ,0       // CH_OTHER
+    0    ,0    ,255  ,0    ,255  ,0    ,255  ,0       // CH_OTHER
 };
 
 void set_cursor(unsigned char x, unsigned char y)
@@ -339,9 +339,11 @@ void screen_select_file(void)
 void screen_select_file_display(char *p, char *f)
 {
   unsigned char i;
-  // Host
-  screen_puts(1, 0, selected_host_name);
-  screen_puts(1 + strlen(selected_host_name),0, p);
+  screen_clear_line(0);
+  screen_clear_line(1);
+  screen_puts(0, 0, CH_LINK);
+  screen_puts(2, 0, selected_host_name);
+  screen_puts(2 + strlen(selected_host_name),0, p);
 
   // Path - the path can wrap to line 4 (maybe 5?) so clear both to be safe.
   //screen_puts(0, 1, "Path:");
@@ -400,8 +402,9 @@ void screen_select_file_display_entry(unsigned char y, char *e, unsigned entryTy
   if (entryType > 0)
   {
     if (entryType == 1) screen_puts(0,FILES_START_Y+y,CH_FOLDER);
-    else if (entryType == 2) screen_puts(0,FILES_START_Y+y,CH_OTHER);
+    else if (entryType == 2) screen_puts(0,FILES_START_Y+y,CH_BINARY);
     else if (entryType == 3) screen_puts(0,FILES_START_Y+y,CH_LINK);
+    else if (entryType == 4) screen_puts(0,FILES_START_Y+y,CH_MENU);
     else screen_puts(0,FILES_START_Y+y,CH_OTHER);
     screen_puts(2, FILES_START_Y + y, e);
   }
@@ -461,8 +464,12 @@ void screen_clear_line(unsigned char y)
 
 void screen_error(const char *msg)
 {
-  screen_clear_line(24);
-  screen_puts(0, 24, msg);
+  screen_clear_line(1);
+  bar_show(1);
+  bar_set_color(COLOR_SETTING_FAILED);
+  screen_puts(0, 1, msg);
+  while (!kbhit()) {}
+  bar_set_color(COLOR_SETTING_SUCCESSFUL);
 }
 
 void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
