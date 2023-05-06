@@ -15,9 +15,6 @@
 #endif /* BUILD_ADAM */
 
 #ifdef BUILD_APPLE2
-#ifdef BUILD_A2CDA
-#pragma cda "FujiNet Config" Start ShutDown
-#endif /* BUILD_A2CDA */
 #include "apple2/screen.h"
 #include "apple2/input.h"
 #include "apple2/globals.h"
@@ -39,6 +36,7 @@
 #include "c64/input.h"
 #include "c64/globals.h"
 #include "c64/io.h"
+#define PRINTER 0
 #endif /* BUILD_C64 */
 
 #ifdef BUILD_PC8801

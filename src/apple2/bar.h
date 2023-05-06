@@ -8,9 +8,7 @@
 
 #include "globals.h"
 
-extern unsigned char *ram;
-
-unsigned short bar_coord(unsigned char x, unsigned char y);
+#define CURRENT_LINE (*(char**)0x28)
 
 /**
  * Clear the currently displayed bar from screen
@@ -29,12 +27,12 @@ void bar_set(unsigned char y, unsigned char c, unsigned char m, unsigned char i)
 /**
  * Move bar upward until index 0
  */
-void bar_up();
+void bar_up(void);
 
 /**
  * Move bar downward until index m
  */
-void bar_down();
+void bar_down(void);
 
 /**
  * Jump to location
@@ -42,13 +40,13 @@ void bar_down();
  */
 void bar_jump(unsigned char i);
 
-void bar_update();
+void bar_update(void);
 
 /**
  * Get current bar position
  * @return bar index
  */
-unsigned char bar_get();
+unsigned char bar_get(void);
 
 #endif /* BAR_H */
 #endif /* BUILD_APPLE2 */

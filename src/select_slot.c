@@ -20,9 +20,6 @@
 #endif /* BUILD_ADAM */
 
 #ifdef BUILD_APPLE2
-#ifdef BUILD_A2CDA
-#pragma cda "FujiNet Config" Start ShutDown
-#endif /* BUILD_A2CDA */
 #include "apple2/screen.h"
 #include "apple2/input.h"
 #include "apple2/globals.h"
@@ -46,7 +43,8 @@
 #include "c64/globals.h"
 #include "c64/io.h"
 #include "c64/bar.h"
-#endif /* BUILD_APPLE2 */
+#define DIR_MAX_LEN 36
+#endif /* BUILD_C64 */
 
 #ifdef BUILD_PC8801
 #include "pc8801/screen.h"
