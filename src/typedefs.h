@@ -34,7 +34,6 @@ typedef enum _sf_subState
    SF_SELECTED,
    SF_FILTER,
    SF_LINK,
-   SF_SUBMENU,
    SF_ADVANCE_FOLDER,
    SF_DEVANCE_FOLDER,
    SF_NEW,

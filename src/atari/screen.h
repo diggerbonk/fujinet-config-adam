@@ -122,7 +122,6 @@ extern unsigned char *cursor_ptr;
 #define CH_BINARY "\x05"
 #define CH_LINK "\x06"      // Set the server folder to atari heart.
 #define CH_OTHER "\x14"    
-#define CH_MENU "\x08"      // Disk image
 #define CH_KEY_LABEL_L "\x99" // Left arrow on the keyboard
 #define CH_KEY_LABEL_R "\x19" // Right arrow on the keyboard
 

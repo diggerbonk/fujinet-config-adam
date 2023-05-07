@@ -39,7 +39,7 @@ unsigned char fontPatch[64] = {
     0    ,204  ,205  ,195  ,255  ,255  ,255  ,0,    // CH_BINARY
     0    ,0    ,112  ,206  ,115  ,14    ,0   ,0,    // CH_LINK
     255  ,0    ,0    ,0    ,0    ,0    ,0    ,255,  // ?? where'd it go?
-    0    ,0    ,255  ,0    ,255  ,0    ,255  ,0       // CH_OTHER
+    0    ,0    ,0  ,0    ,0  ,0    ,0  ,0       // CH_OTHER
 };
 
 void set_cursor(unsigned char x, unsigned char y)
@@ -404,7 +404,6 @@ void screen_select_file_display_entry(unsigned char y, char *e, unsigned entryTy
     if (entryType == 1) screen_puts(0,FILES_START_Y+y,CH_FOLDER);
     else if (entryType == 2) screen_puts(0,FILES_START_Y+y,CH_BINARY);
     else if (entryType == 3) screen_puts(0,FILES_START_Y+y,CH_LINK);
-    else if (entryType == 4) screen_puts(0,FILES_START_Y+y,CH_MENU);
     else screen_puts(0,FILES_START_Y+y,CH_OTHER);
     screen_puts(2, FILES_START_Y + y, e);
   }

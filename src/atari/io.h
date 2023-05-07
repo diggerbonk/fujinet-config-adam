@@ -26,7 +26,6 @@ void io_put_host_slots(HostSlot *h);
 void io_put_device_slots(DeviceSlot *d);
 void io_mount_host_slot(unsigned char hs);
 void io_open_directory(unsigned char hs, char *p, char *f);
-void io_open_menu(char *m);
 char *io_read_directory(unsigned char l, unsigned char a);
 void io_close_directory(void);
 void io_set_directory_position(DirectoryPosition pos);

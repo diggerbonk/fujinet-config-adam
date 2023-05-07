@@ -62,7 +62,6 @@ extern char mode;
 extern DirectoryPosition pos;
 extern char path[224];
 extern char filter[32];
-extern char submenu[32];
 extern bool create;
 extern bool dir_eof;
 extern bool quick_boot;
