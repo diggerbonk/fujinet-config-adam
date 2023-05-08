@@ -223,7 +223,7 @@ void select_display_long_filename(void)
 #else
       io_set_directory_position(pos + bar_get());
 #endif
-      e = io_read_directory(64, 0);
+      e = io_read_directory(64, 0x20);
       screen_select_file_display_long_filename(e);
       io_close_directory();
       long_entry_displayed = true;
@@ -277,7 +277,7 @@ void select_file_choose(char visibleEntries)
         pos -= (bar_get() - FILES_START_Y);
       }
       else if (selected_file_type==3) sf_subState = SF_LINK;
-      else if (selected_file_type==1) sf_subState = SF_ADVANCE_FOLDER;
+      else if (selected_file_type==1 || selected_file_type ==4) sf_subState = SF_ADVANCE_FOLDER;
       else sf_subState = SF_DONE;
     }
   }
@@ -300,7 +300,7 @@ void select_file_link(void)
  
   io_set_directory_position(pos);
 
-  e = io_read_directory(128, 1);
+  e = io_read_directory(128, 0x20);
 
   strcpy(tnfsHostname, e);
 
@@ -331,7 +331,7 @@ void select_file_advance(void)
 
   io_set_directory_position(pos);
 
-  e = io_read_directory(128, 1);
+  e = io_read_directory(128, 0x20);
 
   strcat(path, e); // append directory entry to end of current path
 
@@ -347,9 +347,9 @@ void select_file_devance(void)
 {
   int i;
   char *p;
-
+  
   p = strrchr(path, '/'); // find end of directory string (last /)
-
+  if (p == path) p += (strlen(path)-1);
   bar_clear(false);
 
   while (*--p != '/')

@@ -32,19 +32,19 @@ void mount_and_boot(void)
     }
 
     screen_clear();
-    screen_puts(3, 0, "MOUNT AND BOOT");
+    cputsxy(3, 0, "MOUNT AND BOOT");
 
     for (i = 0; i < NUM_DEVICE_SLOTS; i++)
     {
         if (deviceSlots[i].hostSlot != 0xFF)
         {
             sprintf(temp, "Device %d: uses Host %d, mounting Host", i + 1, deviceSlots[i].hostSlot + 1);
-            screen_puts(0, 2 + i, temp);
+            cputsxy(0, 2 + i, temp);
         }
         else
         {
             sprintf(temp, "Device %d: empty", i + 1);
-            screen_puts(0, 2 + i, temp);
+            cputsxy(0, 2 + i, temp);
         }
     }
 
@@ -53,12 +53,12 @@ void mount_and_boot(void)
         if (deviceSlots[i].hostSlot != 0xFF)
         {
             sprintf(temp, "Device %d: Mounting image from Host %d", i + 1, deviceSlots[i].hostSlot + 1);
-            screen_puts(0, 4 + NUM_HOST_SLOTS + i, temp);
+            cputsxy(0, 4 + NUM_HOST_SLOTS + i, temp);
         }
         else
         {
             sprintf(temp, "Device %d: empty", i + 1);
-            screen_puts(0, 4 + NUM_HOST_SLOTS + i, temp);
+            cputsxy(0, 4 + NUM_HOST_SLOTS + i, temp);
         }
     }
 
@@ -71,7 +71,7 @@ void mount_and_boot(void)
     }
     else
     {
-        screen_puts(9, 22, "SUCCESSFUL! BOOTING");
+        cputsxy(9, 22, "SUCCESSFUL! BOOTING");
         io_set_boot_config(0);
         cold_start();
     }

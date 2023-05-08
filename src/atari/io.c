@@ -254,6 +254,17 @@ void io_open_directory(unsigned char hs, char *p, char *f)
   siov();
 }
 
+// Bits in a:
+//
+//   1000 0000 : Get extended file information
+//   0100 0000 : Return type info in first two bytes
+//   0010 0000 : Return long (item) name
+//   0001 0000 : Unused
+//   0000 1000 : ""
+//   0000 0100 : ""
+//   0000 0010 : ""
+//   0000 0001 : ""
+
 char *io_read_directory(unsigned char maxlen, unsigned char a)
 {
   memset(response, 0, maxlen);
