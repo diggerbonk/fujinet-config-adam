@@ -31,9 +31,9 @@ char fn[256];
 // Patch to the character set to add things like the folder icon and the wifi-signal-strength bars.
 // Each new character is 8-bytes.
 // Note that the characters are not stored in memory in the same order as 
-// ATASCII order, the mapping is this:
+// ATASCII order, the mapping goes (roughly) like this:
 //     
-//     Memory     ATASCII
+//     Memory     ATASCII    Description
 //     00-0F      20-2F      Typewriter top row symbols
 //     10-1F      30-3F      Digits & more typewriter symbols
 //     20-3F      40-3F      Upper case alphabet
@@ -106,18 +106,18 @@ void screen_set_wifi_print_rssi(SSIDInfo *s, unsigned char i)
 
   if (s->rssi > -40)
   {
-    out[0] = 0x01;
-    out[1] = 0x02;
-    out[2] = 0x03;
+    out[0] = CH_WIFI_BARS1;
+    out[1] = CH_WIFI_BARS2;
+    out[2] = CH_WIFI_BARS3;
   }
   else if (s->rssi > -60)
   {
-    out[0] = 0x01;
-    out[1] = 0x02;
+    out[0] = CH_WIFI_BARS1;
+    out[1] = CH_WIFI_BARS2;
   }
   else
   {
-    out[0] = 0x01;
+    out[0] = CH_WIFI_BARS1;
   }
 
   cputsxy(35, i + NETWORKS_START_Y, out);
