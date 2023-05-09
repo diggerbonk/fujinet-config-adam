@@ -86,10 +86,6 @@ unsigned char input_handle_joystick(void)
     return 0;
 }
 
-void input_line(unsigned char x, unsigned char y, unsigned char o, char *c, unsigned char l, bool password)
-{
-}
-
 void input_line_set_wifi_custom(char *c)
 {
   bar_show(20);
