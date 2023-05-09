@@ -118,10 +118,10 @@ extern unsigned char *cursor_ptr;
  * The following defines assign an Atari internal code (2) character to specific labels used for display.
  **/
 
-#define CH_FOLDER "\x04"      // Set the character folder to #
-#define CH_LINK  "\x05"      // Set the server folder to atari heart.
-#define CH_OTHER "\x06"    
-#define CH_MENU  "\x07"
+#define CH_FOLDER "\x1B"      // Set the character folder to #
+#define CH_LINK  "\x60"      // Set the server folder to atari heart.
+#define CH_OTHER "\x7B"    
+#define CH_MENU  "\x7D"
 #define CH_KEY_LABEL_L "\x99" // Left arrow on the keyboard
 #define CH_KEY_LABEL_R "\x19" // Right arrow on the keyboard
 
