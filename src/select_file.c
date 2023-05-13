@@ -373,7 +373,7 @@ void select_file_devance(void)
 unsigned char select_file_is_folder(void)
 {
     unsigned char result = select_file_type();
-    if (result == 1) return true;
+    if (result == 1 || result == 4) return true;
     else return false;
 }
 
