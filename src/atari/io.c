@@ -49,7 +49,7 @@ void io_init(void)
   OS.color1 = COLOR_FONT; // gr.0 font
   OS.color3 = 0x00; 
   OS.color2 = COLOR_BACKGROUND; // background
-  OS.color4 = COLOR_BACKGROUND; // frame
+  OS.color4 = COLOR_BORDER; // frame
   OS.coldst = 1;
   OS.sdmctl = 0; // Turn off screen
 }
