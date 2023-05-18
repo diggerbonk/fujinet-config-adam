@@ -292,20 +292,13 @@ void select_file_link(void)
       state = HOSTS_AND_DEVICES;
       return;
   }
-<<<<<<< HEAD
- 
-=======
-
->>>>>>> feature-support-link-format
   io_set_directory_position(pos);
 
   e = io_read_directory(128, 0x20);
 
-<<<<<<< HEAD
-  strcpy(tnfsHostname, e);
-=======
-  strcpy(tnfsHostname, &e[1]);
->>>>>>> feature-support-link-format
+  // old-style links have a '+' prefix
+  if (e[0] == '+') strcpy(tnfsHostname, &e[1]);
+  else strcpy(tnfsHostname, e);
 
   io_close_directory();
 
@@ -313,10 +306,7 @@ void select_file_link(void)
   io_put_host_slots(&hostSlots[0]);
 
   selected_host_slot = NUM_HOST_SLOTS-1;
-<<<<<<< HEAD
-=======
   strcpy(selected_host_name, tnfsHostname);
->>>>>>> feature-support-link-format
   sf_subState = SF_INIT;
 
 }
@@ -379,9 +369,7 @@ void select_file_devance(void)
 
 unsigned select_file_entry_type(void)
 {
-    unsigned char result = select_file_type();
-    if (result == 1 || result == 4) return true;
-    else return false;
+    return select_file_type();
 }
 
 unsigned select_file_type(void)
@@ -395,16 +383,8 @@ unsigned select_file_type(void)
 
   io_set_directory_position(pos);
 
-<<<<<<< HEAD
   e = io_read_directory(16, 0x40); // 0x40 -> get type info
   result = e[0]*16 + e[1];
-=======
-  e = io_read_directory(128, 0);
-
-  if (strrchr(e, '/') != NULL) result = ENTRY_TYPE_FOLDER;
-  else if (e[0] == '+') result = ENTRY_TYPE_LINK;
-  else result = ENTRY_TYPE_FILE;
->>>>>>> feature-support-link-format
 
   io_close_directory();
 
