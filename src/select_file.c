@@ -7,9 +7,9 @@
 #include <conio.h>
 #include <string.h>
 #include "select_file.h"
+#include "fuji_typedefs.h"
 
 #ifdef BUILD_ADAM
-#include "adam/fuji_typedefs.h"
 #include "adam/screen.h"
 #include "adam/io.h"
 #include "adam/globals.h"
@@ -20,7 +20,6 @@
 #endif /* BUILD_ADAM */
 
 #ifdef BUILD_ATARI
-#include "atari/fuji_typedefs.h"
 #include "atari/screen.h"
 #include "atari/io.h"
 #include "atari/globals.h"
@@ -30,7 +29,6 @@
 #endif
 
 #ifdef BUILD_APPLE2
-#include "apple2/fuji_typedefs.h"
 #include "apple2/screen.h"
 #include "apple2/io.h"
 #include "apple2/globals.h"
@@ -41,7 +39,6 @@
 #endif /* BUILD_APPLE2 */
 
 #ifdef BUILD_C64
-#include "c64/fuji_typedefs.h"
 #include "c64/screen.h"
 #include "c64/io.h"
 #include "c64/globals.h"
@@ -52,7 +49,6 @@
 #endif /* BUILD_C64 */
 
 #ifdef BUILD_PC8801
-#include "pc8801/fuji_typedefs.h"
 #include "pc8801/screen.h"
 #include "pc8801/io.h"
 #include "pc8801/globals.h"
@@ -62,7 +58,6 @@
 #endif /* BUILD_PC8801 */
 
 #ifdef BUILD_PC6001
-#include "pc6001/fuji_typedefs.h"
 #include "pc6001/screen.h"
 #include "pc6001/io.h"
 #include "pc6001/globals.h"
@@ -297,12 +292,20 @@ void select_file_link(void)
       state = HOSTS_AND_DEVICES;
       return;
   }
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> feature-support-link-format
   io_set_directory_position(pos);
 
   e = io_read_directory(128, 0x20);
 
+<<<<<<< HEAD
   strcpy(tnfsHostname, e);
+=======
+  strcpy(tnfsHostname, &e[1]);
+>>>>>>> feature-support-link-format
 
   io_close_directory();
 
@@ -310,6 +313,10 @@ void select_file_link(void)
   io_put_host_slots(&hostSlots[0]);
 
   selected_host_slot = NUM_HOST_SLOTS-1;
+<<<<<<< HEAD
+=======
+  strcpy(selected_host_name, tnfsHostname);
+>>>>>>> feature-support-link-format
   sf_subState = SF_INIT;
 
 }
@@ -370,7 +377,7 @@ void select_file_devance(void)
   sf_subState = SF_DISPLAY; // And display the result.
 }
 
-unsigned char select_file_is_folder(void)
+unsigned select_file_entry_type(void)
 {
     unsigned char result = select_file_type();
     if (result == 1 || result == 4) return true;
@@ -388,8 +395,16 @@ unsigned select_file_type(void)
 
   io_set_directory_position(pos);
 
+<<<<<<< HEAD
   e = io_read_directory(16, 0x40); // 0x40 -> get type info
   result = e[0]*16 + e[1];
+=======
+  e = io_read_directory(128, 0);
+
+  if (strrchr(e, '/') != NULL) result = ENTRY_TYPE_FOLDER;
+  else if (e[0] == '+') result = ENTRY_TYPE_LINK;
+  else result = ENTRY_TYPE_FILE;
+>>>>>>> feature-support-link-format
 
   io_close_directory();
 

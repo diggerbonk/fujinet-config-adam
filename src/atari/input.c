@@ -422,6 +422,7 @@ SFSubState input_select_file_choose(void)
   unsigned char k;
   unsigned char y;
   unsigned char temp[30];
+  unsigned entryType;
 
   if (input_handle_console_keys() == 0x03) // option
   {
@@ -459,7 +460,24 @@ SFSubState input_select_file_choose(void)
       bar_down();
     }
     return SF_CHOOSE;
-  case '+': // left
+  case KCODE_RETURN:
+  case '*': // took from fujinet-config
+    pos += bar_get() - FILES_START_Y;
+    screen_select_file_clear_long_filename();
+    entryType = select_file_entry_type();
+    
+    if (entryType == ENTRY_TYPE_FOLDER)
+      return SF_ADVANCE_FOLDER;
+    else if (entryType == ENTRY_TYPE_LINK)
+      return SF_LINK;
+    else
+    {
+      return SF_DONE;
+    }
+  case KCODE_BACKSP:
+    return SF_DEVANCE_FOLDER;
+
+  case '<':
     if ( strlen(path) == 1 && pos <= 0 ) // We're at the root of the filesystem, and we're on the first page - go back to hosts/devices screen.
     {
       state = HOSTS_AND_DEVICES;
