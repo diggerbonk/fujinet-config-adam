@@ -367,7 +367,7 @@ void io_update_devices_enabled(bool *e)
 {
   char i;
 
-  for (i=0;i<4;i++)
+  for (i=0;i<6;i++)
     {
       e[i]=io_get_device_enabled_status(io_device_slot_to_device(i));
     }
@@ -410,11 +410,13 @@ void io_boot(void)
 {
   #ifdef __ORCAC__
   sp_done();
+	#ifndef BUILD_A2CDA
   WriteChar(0x8c);  // Clear screen
   WriteChar(0x92);  // Set 80 col
   WriteChar(0x86);  // Cursor on
   TextShutDown();
   exit(0);
+	#endif
 
   #else
   char ostype;
