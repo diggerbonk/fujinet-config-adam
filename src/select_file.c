@@ -8,10 +8,10 @@
 #include <string.h>
 #include "select_file.h"
 #include "fuji_typedefs.h"
+#include "fuji_io.h"
 
 #ifdef BUILD_ADAM
 #include "adam/screen.h"
-#include "adam/io.h"
 #include "adam/globals.h"
 #include "adam/input.h"
 #include "adam/bar.h"
@@ -21,7 +21,6 @@
 
 #ifdef BUILD_ATARI
 #include "atari/screen.h"
-#include "atari/io.h"
 #include "atari/globals.h"
 #include "atari/input.h"
 #include "atari/bar.h"
@@ -30,7 +29,6 @@
 
 #ifdef BUILD_APPLE2
 #include "apple2/screen.h"
-#include "apple2/io.h"
 #include "apple2/globals.h"
 #include "apple2/input.h"
 #include "apple2/bar.h"
@@ -40,7 +38,6 @@
 
 #ifdef BUILD_C64
 #include "c64/screen.h"
-#include "c64/io.h"
 #include "c64/globals.h"
 #include "c64/input.h"
 #include "c64/bar.h"
@@ -50,7 +47,6 @@
 
 #ifdef BUILD_PC8801
 #include "pc8801/screen.h"
-#include "pc8801/io.h"
 #include "pc8801/globals.h"
 #include "pc8801/input.h"
 #include "pc8801/bar.h"
@@ -59,7 +55,6 @@
 
 #ifdef BUILD_PC6001
 #include "pc6001/screen.h"
-#include "pc6001/io.h"
 #include "pc6001/globals.h"
 #include "pc6001/input.h"
 #include "pc6001/bar.h"
@@ -68,7 +63,6 @@
 
 #ifdef BUILD_RC2014
 #include "rc2014/screen.h"
-#include "rc2014/io.h"
 #include "rc2014/globals.h"
 #include "rc2014/input.h"
 #include "rc2014/bar.h"
@@ -103,7 +97,7 @@ void select_file_init(void)
     strncpy(source_filter, filter, 32);
   }
 
-  io_close_directory();
+  fuji_io_close_directory();
   pos = 0;
   memset(entry_size, 0, ENTRIES_PER_PAGE);
   memset(path, 0, 224);
@@ -120,9 +114,9 @@ unsigned char select_file_display(void)
   char i;
   char *e;
 
-  io_mount_host_slot(selected_host_slot);
+  fuji_io_mount_host_slot(selected_host_slot);
 
-  if (io_error())
+  if (fuji_io_error())
   {
     screen_error("  COULD NOT MOUNT HOST SLOT.");
     sf_subState = SF_DONE;
@@ -132,9 +126,9 @@ unsigned char select_file_display(void)
 
   screen_select_file_display(path, filter);
 
-  io_open_directory(selected_host_slot, path, filter);
+  fuji_io_open_directory(selected_host_slot, path, filter);
 
-  if (io_error())
+  if (fuji_io_error())
   {
     screen_error("  COULD NOT OPEN DIRECTORY.");
     sf_subState = SF_DONE;
@@ -143,11 +137,11 @@ unsigned char select_file_display(void)
   }
 
   if (pos > 0)
-    io_set_directory_position(pos);
+    fuji_io_set_directory_position(pos);
 
   for (i = 0; i < ENTRIES_PER_PAGE; i++)
   {
-    e = io_read_directory(DIR_MAX_LEN, 0);
+    e = fuji_io_read_directory(DIR_MAX_LEN, 0);
 #ifdef BUILD_ADAM
 #define FUDGE_OFFSET 2
 #else
@@ -167,11 +161,11 @@ unsigned char select_file_display(void)
   }
 
   // Do one more read to check EOF
-  e = io_read_directory(DIR_MAX_LEN, 0);
+  e = fuji_io_read_directory(DIR_MAX_LEN, 0);
   if (e[1] == 0x7F) // was e[2]
     dir_eof = true;
 
-  io_close_directory();
+  fuji_io_close_directory();
 
   if (pos > 0)
     screen_select_file_prev();
@@ -187,9 +181,9 @@ void select_file_set_source_filename(void)
 {
   char entry[128];
 
-  io_open_directory(selected_host_slot, path, filter);
-  io_set_directory_position(pos);
-  strcpy(entry, io_read_directory(128, 0));
+  fuji_io_open_directory(selected_host_slot, path, filter);
+  fuji_io_set_directory_position(pos);
+  strcpy(entry, fuji_io_read_directory(128, 0));
   strcat(path, entry);
   strcpy(source_filename, entry);
 }
@@ -206,15 +200,15 @@ void select_display_long_filename(void)
   {
     if (long_entry_displayed == false)
     {
-      io_open_directory(selected_host_slot, path, filter);
+      fuji_io_open_directory(selected_host_slot, path, filter);
 #ifdef BUILD_ATARI      
-      io_set_directory_position(pos + bar_get() - FILES_START_Y);
+      fuji_io_set_directory_position(pos + bar_get() - FILES_START_Y);
 #else
-      io_set_directory_position(pos + bar_get());
+      fuji_io_set_directory_position(pos + bar_get());
 #endif
-      e = io_read_directory(64, 0);
+      e = fuji_io_read_directory(64, 0);
       screen_select_file_display_long_filename(e);
-      io_close_directory();
+      fuji_io_close_directory();
       long_entry_displayed = true;
     }
   }
@@ -269,25 +263,25 @@ void select_file_link(void)
   char tnfsHostname[128];
   bar_clear(false);
 
-  io_open_directory(selected_host_slot, path, filter);
+  fuji_io_open_directory(selected_host_slot, path, filter);
 
-  if (io_error())
+  if (fuji_io_error())
   {
       sf_subState = SF_DONE;
       state = HOSTS_AND_DEVICES;
       return;
   }
 
-  io_set_directory_position(pos);
+  fuji_io_set_directory_position(pos);
 
-  e = io_read_directory(128, 0x20);
+  e = fuji_io_read_directory(128, 0x20);
 
   strcpy(tnfsHostname, &e[1]);
 
-  io_close_directory();
+  fuji_io_close_directory();
 
   strcpy((char *)hostSlots[NUM_HOST_SLOTS-1], tnfsHostname);
-  io_put_host_slots(&hostSlots[0]);
+  fuji_io_put_host_slots(&hostSlots[0]);
 
   selected_host_slot = NUM_HOST_SLOTS-1;
   strcpy(selected_host_name, tnfsHostname);
@@ -301,15 +295,15 @@ void select_file_advance(void)
 
   bar_clear(false);
 
-  io_open_directory(selected_host_slot, path, filter);
+  fuji_io_open_directory(selected_host_slot, path, filter);
 
-  io_set_directory_position(pos);
+  fuji_io_set_directory_position(pos);
 
-  e = io_read_directory(128, 1);
+  e = fuji_io_read_directory(128, 1);
 
   strcat(path, e); // append directory entry to end of current path
 
-  io_close_directory(); // have to use "e" before calling another io command, otherwise e gets wiped out
+  fuji_io_close_directory(); // have to use "e" before calling another io command, otherwise e gets wiped out
 
   pos = 0;
   dir_eof = quick_boot = false;
@@ -347,17 +341,17 @@ unsigned select_file_entry_type(void)
   char *e;
   unsigned result;
 
-  io_open_directory(selected_host_slot, path, filter);
+  fuji_io_open_directory(selected_host_slot, path, filter);
 
-  io_set_directory_position(pos);
+  fuji_io_set_directory_position(pos);
 
-  e = io_read_directory(128, 0);
+  e = fuji_io_read_directory(128, 0);
 
   if (strrchr(e, '/') != NULL) result = ENTRY_TYPE_FOLDER;
   else if (e[0] == '+') result = ENTRY_TYPE_LINK;
   else result = ENTRY_TYPE_FILE;
 
-  io_close_directory();
+  fuji_io_close_directory();
 
   return result; // Offset 10 = directory flag.
 }
