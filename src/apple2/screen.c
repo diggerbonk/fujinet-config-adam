@@ -26,6 +26,7 @@ static const char *off="OFF";
 extern bool copy_mode;
 extern unsigned char copy_host_slot;
 extern bool deviceEnabled[8];
+extern char copySpec[256];
 
 void screen_init(void)
 {
@@ -268,16 +269,44 @@ char* screen_hosts_and_devices_slot(char *c)
 void screen_hosts_and_devices_device_slots(unsigned char y, DeviceSlot *d, bool *e)
 {
   char i;
+  unsigned char line;
+  char rw_mode;
+  char host_slot;
+  char separator;
 
-  for (i=0;i<4;i++) // smartport
-    {
-      gotoxy(0,i+y); cprintf("%d %s",i+1,screen_hosts_and_devices_device_slot(d[i].hostSlot,e[i],(char *)d[i].file));
+  for (i = 0; i < NUM_DEVICE_SLOTS; i++)
+  {
+    line = y + i;
+    if (i > 3) {
+      // skip over diskII heading
+      line++; 
     }
 
-  for (i=4;i<6;i++) // diskII
-    {
-      gotoxy(0,i+y+1); cprintf("%d %s",i+1,screen_hosts_and_devices_device_slot(d[i].hostSlot,e[i],(char *)d[i].file));
+    if (d[i].file[0]) {
+        switch (d[i].mode) {
+          case MODE_READ:
+            rw_mode = 'R';
+            break;
+          case MODE_WRITE:
+            rw_mode = 'W';
+            break;
+          default:
+            // should not happen ... but we've got bugs
+            rw_mode = '?';
+            break;
+        }
+        host_slot = '1' + d[i].hostSlot;
+        separator = ':';
+    } else {
+        rw_mode = ' ';
+        host_slot = ' ';
+        separator = ' ';
     }
+
+    gotoxy(0, line);
+    cprintf("%d%c %c%c%s", i+1, rw_mode, host_slot, separator, screen_hosts_and_devices_device_slot(d[i].hostSlot, e[i], (char *)d[i].file));
+  }
+
 }
 
 void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, bool *e)
@@ -307,7 +336,7 @@ void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, bool *e)
 
 void screen_hosts_and_devices_hosts(void)
 {
-  bar_set(1,1,8,0);
+  bar_set(1, 1, 8, selected_host_slot);
   cclearxy(0,STATUS_BAR,120);
   gotoxy(0,STATUS_BAR);
   screen_print_menu("1-8", ":HOST  ");
@@ -341,7 +370,7 @@ void screen_hosts_and_devices_devices(void)
   screen_print_menu("E","JECT  ");
   screen_print_menu("R","EAD ONLY  ");
   screen_print_menu("W","RITE\r\n");
-  screen_print_menu("TAB",":HOST SLOTS");
+  screen_print_menu("TAB",":HOST SLOTS  ");
   screen_print_menu("ESC", ":BOOT");
 }
 
@@ -353,17 +382,18 @@ void screen_hosts_and_devices_clear_host_slot(unsigned char i)
 void screen_hosts_and_devices_edit_host_slot(unsigned char i)
 {
   cclearxy(0,STATUS_BAR,120);
-  gotoxy(0,STATUS_BAR); cprintf("EDIT THE HOST NAME FOR SLOT %d\r\nPRESS [RETURN] WHEN DONE.",i);
+  gotoxy(0,STATUS_BAR); cprintf("EDIT THE HOST NAME FOR SLOT %d\r\nPRESS [RETURN] WHEN DONE.", i + 1);
 }
 
 void screen_perform_copy(char *sh, char *p, char *dh, char *dp)
 {
   clrscr();
   gotoxy(0,0); cprintf("%32s","COPYING FILE FROM:");
-  gotoxy(0,1); cprintf("%32s",sh);
-  gotoxy(0,2); cprintf("%-128s",p);
-  gotoxy(0,6); cprintf("%32s",dh);
-  gotoxy(0,7); cprintf("%-128s",dp);
+  gotoxy(0,2); cprintf("%32s",sh);
+  gotoxy(0,3); cprintf("%-128s",p);
+  gotoxy(0,7); cprintf("%32s","COPYING FILE TO:");
+  gotoxy(0,9); cprintf("%32s",dh);
+  gotoxy(0,10); cprintf("%-128s",dp);
 }
 
 void screen_show_info(bool printerEnabled, AdapterConfig* ac)
@@ -472,10 +502,20 @@ void screen_select_file_choose(char visibleEntries)
   bar_set(3,2,visibleEntries,0); // TODO: Handle previous
   cclearxy(0,STATUS_BAR,120);
   gotoxy(0,STATUS_BAR);
-  screen_print_menu("RETURN",":SELECT FILE TO MOUNT\r\n");
-  screen_print_menu("ESC",":ABORT  ");
-  screen_print_menu("F","ILTER  ");
-  screen_print_menu("N","EW  ");
+  if (copy_mode == true)
+  {
+    screen_print_menu("RETURN",":SELECT DIRECTORY\r\n");
+    screen_print_menu("ESC",":ABORT  ");
+    screen_print_menu("C",":OPY START  ");
+  }
+  else
+  {
+    screen_print_menu("RETURN",":SELECT FILE TO MOUNT\r\n");
+    screen_print_menu("ESC",":ABORT  ");
+    screen_print_menu("F","ILTER  ");
+    screen_print_menu("N","EW  ");
+    screen_print_menu("C","OPY  ");
+  }
 }
 
 void screen_select_file_filter(void)
@@ -519,8 +559,8 @@ void screen_select_slot_choose(void)
   gotoxy(1,STATUS_BAR);
   screen_print_menu("1-6"," SELECT DRIVE OR USE ARROW KEYS\r\n ");
   screen_print_menu("RETURN/R",":INSERT READ ONLY\r\n ");
-  screen_print_menu("W",":INSERT READ/WRITE\r\n ");
-  screen_print_menu("ESC"," TO ABORT.");
+  screen_print_menu("W",":INSERT READ/WRITE  ");
+  screen_print_menu("ESC",":ABORT");
 }
 
 void screen_select_file_new_name(void)
@@ -576,12 +616,12 @@ void screen_hosts_and_devices_eject(unsigned char ds)
   if (ds > 3) // diskII split
   {
 	  cclearxy(1,12+ds,39);
-      gotoxy(2,12+ds); cprintf("Empty");
+      gotoxy(5,12+ds); cprintf("Empty");
   }
   else
   {
 	  cclearxy(1,11+ds,39);
-      gotoxy(2,11+ds); cprintf("Empty");
+      gotoxy(5,11+ds); cprintf("Empty");
   }
   bar_jump(bar_get());
 }

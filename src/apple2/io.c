@@ -180,7 +180,7 @@ AdapterConfig *io_get_adapter_config(void)
   return &ac;
 }
 
-void io_set_ssid(NetConfig *nc)
+int io_set_ssid(NetConfig *nc)
 {
   char idx = 0;
   sp_payload[idx++] = sizeof(*nc);
@@ -189,6 +189,7 @@ void io_set_ssid(NetConfig *nc)
   idx += sizeof(nc->ssid);
   memcpy(&sp_payload[idx], nc->password, sizeof(nc->password));
   sp_error = sp_control(sp_dest, FUJICMD_SET_SSID);
+  return 0;
 }
 
 char *io_get_device_filename(uint8_t ds)
@@ -423,8 +424,8 @@ void io_boot(void)
   int i;
 
   ostype = get_ostype() & 0xF0;
-  clrscr();
-  cprintf("BOOTING...");
+  //clrscr();
+  cprintf("\r\nRESTARTING...");
 
   if (ostype == APPLE_II ||
     ostype == APPLE_IIPLUS ||
