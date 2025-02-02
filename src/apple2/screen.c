@@ -387,11 +387,13 @@ void screen_select_file_next(void)
   gotoxy(0,18); cprintf("%-40s","[...]");
 }
 
+#pragma warn (unused-param, push, off)
 void screen_select_file_display_entry(unsigned char y, char* e, unsigned entryType)
 {
   gotoxy(0,y+3);
   cprintf("%-40s",&e[2]); // skip the first two chars from FN (hold over from Adam)
 }
+#pragma warn (unused-param, pop)
 
 void screen_select_file_clear_long_filename(void)
 {
