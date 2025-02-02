@@ -320,7 +320,6 @@ void select_file_devance(void)
   sf_subState = SF_DISPLAY; // And display the result.
 }
 
-// beep
 unsigned char select_file_is_folder(void)
 {
   unsigned char result = select_file_entry_type();
