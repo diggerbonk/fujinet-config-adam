@@ -257,7 +257,7 @@ void select_file_choose(char visibleEntries)
     sf_subState = input_select_file_choose();
     if (sf_subState == SF_SELECTED) {
       pos += (bar_get() - FILES_START_Y );
-      selected_file_type = select_file_type();
+      selected_file_type = select_file_entry_type();
       if (selected_file_type == 0) 
       {
         sf_subState = SF_CHOOSE;
@@ -322,12 +322,12 @@ void select_file_devance(void)
 
 unsigned char select_file_is_folder(void)
 {
-  unsigned char result = select_file_type();
+  unsigned char result = select_file_entry_type();
   if (result == 1) return true;
   else return false;
 }
 
-unsigned select_file_type(void)
+unsigned select_file_entry_type(void)
 {
   char *e;
   unsigned result;
