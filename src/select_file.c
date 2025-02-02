@@ -156,7 +156,7 @@ unsigned char select_file_display(void)
     }
     else
     {
-      entry_size[i] = strlen(e+1);
+      entry_size[i] = (unsigned char)strlen(e+1);
       visibleEntries++; // could filter on e[0] to deal with message entries like on FUJINET.PL
       screen_select_file_display_entry(i, e+1, e[0]);
     }
@@ -337,7 +337,6 @@ unsigned select_file_entry_type(void)
 
   //e = io_read_directory(128, 0);
 
-  //result = (strrchr(e, '/') != NULL);
   e = io_read_directory(16, 0x40); // 0x40 -> get type info
   result = e[0];
 
