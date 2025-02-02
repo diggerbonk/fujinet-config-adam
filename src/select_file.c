@@ -267,7 +267,12 @@ void select_file_choose(char visibleEntries)
       {
         //select_display_long_filename();
         if (selected_file_type == 1) sf_subState = SF_ADVANCE_FOLDER;
-        else sf_subState = SF_DONE;
+        else 
+        {
+          strncpy(source_path, path, 224);
+          old_pos = pos;
+          sf_subState = SF_DONE;
+        }
       }
     }
   }
