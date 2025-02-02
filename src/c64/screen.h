@@ -39,7 +39,7 @@ void screen_select_file_display(char *p, char *f);
 void screen_select_file_filter(void);
 void screen_select_file_next(void);
 void screen_select_file_prev(void);
-void screen_select_file_display_entry(unsigned char y, char* e, char menuEntryType);
+void screen_select_file_display_entry(unsigned char y, char* e, unsigned entryType);
 void screen_select_file_choose(char visibleEntries);
 
 void screen_select_slot(char *e);

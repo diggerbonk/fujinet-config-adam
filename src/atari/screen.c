@@ -635,13 +635,13 @@ void screen_select_file_prev(void)
   }
 }
 
-void screen_select_file_display_entry(unsigned char y, char *e, char menuEntryType)
+void screen_select_file_display_entry(unsigned char y, char *e, unsigned entryType)
 {
-  if (menuEntryType > 0)
+  if (entryType > 0)
   {
-    if (menuEntryType == 1) screen_puts(1,FILES_START_Y+y,CH_FOLDER);
-    else if (menuEntryType == 2) screen_puts(1,FILES_START_Y+y,"f");
-    else if (menuEntryType == 3) screen_puts(1,FILES_START_Y+y,CH_SERVER);
+    if (entryType == 1) screen_puts(1,FILES_START_Y+y,CH_FOLDER);
+    else if (entryType == 2) screen_puts(1,FILES_START_Y+y,"f");
+    else if (entryType == 3) screen_puts(1,FILES_START_Y+y,CH_SERVER);
     else screen_puts(1,FILES_START_Y+y,"*");
     screen_puts(3, FILES_START_Y + y, e);
   }

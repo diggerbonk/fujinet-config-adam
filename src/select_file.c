@@ -327,10 +327,10 @@ unsigned char select_file_is_folder(void)
   else return false;
 }
 
-unsigned char select_file_type(void)
+unsigned select_file_type(void)
 {
   char *e;
-  unsigned char result;
+  unsigned result;
   io_open_directory(selected_host_slot, path, filter);
 
   io_set_directory_position(pos);
