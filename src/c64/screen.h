@@ -40,7 +40,7 @@ void screen_select_file_filter(void);
 void screen_select_file_next(void);
 void screen_select_file_prev(void);
 void screen_select_file_display_long_filename(char *e);
-void screen_select_file_display_entry(unsigned char y, char* e, unsigned entryType);
+void screen_select_file_display_entry(unsigned char y, char *e, unsigned entryType);
 void screen_select_file_clear_long_filename(void);
 void screen_select_file_choose(char visibleEntries);
 
