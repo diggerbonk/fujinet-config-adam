@@ -11,7 +11,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <conio.h>
 #include <stdint.h>
 #include <peekpoke.h>
@@ -20,6 +19,7 @@
 #include "globals.h"
 #include "bar.h"
 #include "input.h"
+
 unsigned char *video_ptr;  // a pointer to the memory address containing the screen contents
 unsigned char *cursor_ptr; // a pointer to the current cursor position on the screen
 char _visibleEntries;
@@ -87,173 +87,6 @@ void set_active_screen(unsigned char screen)
   active_screen = screen;
 }
 
-void set_cursor(unsigned char x, unsigned char y)
-{
-  // Each screen uses a different displaylist so we need to know how many columns each row is so we can calculate
-  // how many bytes to add to the base video memory pointer. Previously it assumed 40 columns which resulted in the Y
-  // coordinate not always use correctly in screen functions.
-  //
-  // For example, if line 1 is only 20 rows, and the rest of the lines are 40 rows and you called "set_cursor(0, 3)", the
-  // original set_cursor did "x+y*40" which would be an offset of 120 which would put the cursor 20 characters into the 4th line 
-  // since line 1 was only 20 characters.
-  //
-  // This is a hacky way to do it - basically we just see what screen we're on, and since we "know" the layout so we do the math
-  // appopriately. This could be more elegant by doing something like "walking" through the displaylist, PEEKing the value,
-  // determining how many colums in the returned mode, and doing the math accordingly, but this is good for now, just
-  // verbose.
-  //
-  if (active_screen == SCREEN_HOSTS_AND_DEVICES)
-  {
-    // 2x20 column (host header)
-    // 8x40 column (host list)
-    // 2x20 column (drive slot header)
-    // rest 40 column (drive slots and commands)
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20); // * 20 since these are 20 column lines.
-    }
-    else if (y < 10)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40); // * 40 since these are 40 column lines, and add 40 to cover the 1st 2 lines of 20 (prev condition)
-    }
-    else if (y < 12)
-    {
-      cursor_ptr = video_ptr + 40 + 320 + x + ((y - 10) * 20); // * 20 since these are 20 column lines, add 320 to cover the previous set of 40 chol lines, and 40 for the 1st set of 20 col lines.
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 320 + 40 + x + ((y - 12) * 40); // * 20, rest of the the lines are 40 column, add 40 (1st 2), 320 (next 8 of 40), 40 (next 2 of 20)
-    }
-  }
-  else if (active_screen == SCREEN_SHOW_INFO)
-  {
-    // 2x20
-    // 3x40
-    // 1x20 (double height)
-    // 1x20 normal
-    // rest 40
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else if (y < 5)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40);
-    }
-    else if (y < 6)
-    {
-      cursor_ptr = video_ptr + 40 + 120 + x + ((y - 5) * 20);
-    }
-    else if (y < 7)
-    {
-      cursor_ptr = video_ptr + 40 + 140 + x + ((y - 6) * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 160 + x + ((y - 7) * 40);
-    }
-  }
-  // Right now these two are the same, break apart in future if they start to differ.
-  else if (active_screen == SCREEN_SELECT_FILE || active_screen == SCREEN_SELECT_SLOT || active_screen == SCREEN_MOUNT_AND_BOOT)
-  {
-    // 1x20
-    // rest 40
-    if (y < 1)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 20 + x + ((y - 1) * 40);
-    }
-  }
-  else if (active_screen == SCREEN_SET_WIFI)
-  {
-    // 2x20
-    // 20x40
-    // 2x20
-    // 2x40
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else if (y < 22)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40);
-    }
-    else if (y < 24)
-    {
-      cursor_ptr = video_ptr + 40 + 800 + ((y - 22) * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 800 + 40 + ((y - 24) * 40);
-    }
-  }
-  else if (active_screen == SCREEN_CONNECT_WIFI)
-  {
-    // 2x20
-    // 20x40
-    // 2x20
-    // rest 40
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else if (y < 22)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40);
-    }
-    else if (y < 24)
-    {
-      cursor_ptr = video_ptr + 40 + 800 + ((y - 22) * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 800 + 40 + ((y - 24) * 40);
-    }
-  }
-  /*
-  else if (active_screen == SCREEN_MOUNT_AND_BOOT)
-  {
-    // 2x20
-    // 8x40
-    // 2x20
-    // 10x40
-    // 2x20
-    // rest 40
-    if (y < 2)
-    {
-      cursor_ptr = video_ptr + x + (y * 20);
-    }
-    else if (y < 10)
-    {
-      cursor_ptr = video_ptr + 40 + x + ((y - 2) * 40);
-    }
-    else if (y < 12)
-    {
-      cursor_ptr = video_ptr + 40 + 320 + x + ((y - 10) * 20);
-    }
-    else if (y < 22)
-    {
-      cursor_ptr = video_ptr + 40 + 320 + 40 + ((y - 12) * 40);
-    }
-    else if (y < 24)
-    {
-      cursor_ptr = video_ptr + 40 + 320 + 40 + 400 + ((y - 22) * 20);
-    }
-    else
-    {
-      cursor_ptr = video_ptr + 40 + 320 + 40 + 400 + 40 + ((y - 24) * 40);
-    }
-  }*/
-  else
-  {
-    // Default to all 40 character lines.
-    cursor_ptr = video_ptr + x + (y * 40);
-  }
-}
-
 /**********************
  * Print ATASCII string to display memory.  Note: ATASCII is not a 1:1 mapping for ASCII.  It is a ven diagram with significant overlap.
  */
@@ -309,9 +142,8 @@ void screen_mount_and_boot()
   bar_clear(false);
 }
 
-void screen_set_wifi(AdapterConfig *ac)
+void screen_set_wifi(AdapterConfigExtended *ac)
 {
-  char mactmp[3];
   unsigned char i = 0;
   unsigned char x = 13;
 
@@ -319,22 +151,10 @@ void screen_set_wifi(AdapterConfig *ac)
   set_active_screen(SCREEN_SET_WIFI);
   screen_clear();
   bar_clear(false);
-  screen_puts(0, 0, "WELCOME TO #FUJINET!");
-  screen_puts(0, 22, "SCANNING NETWORKS...");
+  screen_puts(0, 0, "WELCOME TO FUJINET!");
+  screen_puts(0, 23, "SCANNING NETWORKS...");
   screen_puts(0, 2, "MAC Address:");
-  screen_puts(15, 2, ":");
-  screen_puts(18, 2, ":");
-  screen_puts(21, 2, ":");
-  screen_puts(24, 2, ":");
-  screen_puts(27, 2, ":");
-
-  // screen_set_wifi_display_mac_address(ac);
-  for (i = 0; i < 6; i++)
-  {
-    itoa(ac->macAddress[i], mactmp, 16);
-    screen_puts(x, 2, mactmp);
-    x += 3;
-  }
+  screen_puts(13, 2, ac->sMacAddress);
 }
 
 void screen_set_wifi_print_rssi(SSIDInfo *s, unsigned char i)
@@ -371,7 +191,7 @@ void screen_set_wifi_select_network(unsigned char nn)
   screen_clear_line(numNetworks + NETWORKS_START_Y);
   screen_puts(2, NETWORKS_START_Y + numNetworks, "<Enter a specific SSID>");
 
-  screen_puts(0, 22, " SELECT NET, S SKIP "
+  screen_puts(0, 23, " SELECT NET, S SKIP "
                      "   ESC TO RE-SCAN   ");
 
   bar_show(NETWORKS_START_Y);
@@ -386,65 +206,23 @@ void screen_set_wifi_custom(void)
 
 void screen_set_wifi_password(void)
 {
-  screen_clear_line(22);
-  screen_puts(3, 22, "   ENTER PASSWORD");
+  screen_clear_line(23);
+  screen_clear_line(24);
+  screen_puts(0, 23, "    ENTER PASSWORD");
 }
 
-void screen_print_ip(unsigned char x, unsigned char y, unsigned char *buf)
-{
-  unsigned char i = 0;
-  unsigned char tmp[4];
-
-  set_cursor(x, y);
-  for (i = 0; i < 4; i++)
-  {
-    itoa(buf[i], tmp, 10);
-    screen_append(tmp);
-    if (i == 3)
-      break;
-    screen_append(".");
-  }
-}
-
-/**
- * Convert hex to a string and print as a MAC address at position x, y
- */
-/**
- * Convert hex to a string and print as a MAC address at position x, y
- */
-void screen_print_mac(unsigned char x, unsigned char y, unsigned char *buf)
-{
-  unsigned char mactmp[18];
-
-  sprintf(mactmp, "%02X:%02X:%02X:%02X:%02X:%02X", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
-  screen_puts(x, y, mactmp);
-}
-
-/**
- * Convert hex to a string.  Special hex output of numbers under 16, e.g. 9 -> 09, 10 -> 0A
- */
-void itoa_hex(unsigned char val, char *buf)
-{
-
-  if (val < 16)
-  {
-    *(buf++) = '0';
-  }
-  itoa(val, buf, 16);
-}
 
 /*
  * Display the 'info' screen
  */
-void screen_show_info(int printerEnabled, AdapterConfig *ac)
+void screen_show_info(int printerEnabled, AdapterConfigExtended *ac)
 {
-  unsigned char i;
   screen_dlist_show_info();
   set_active_screen(SCREEN_SHOW_INFO);
   screen_clear();
   bar_clear(false);
 
-  screen_puts(3, 5, "#FUJINET CONFIG");
+  screen_puts(3, 5, "FUJINET CONFIG");
   screen_puts(7, 17,
               CH_KEY_LABEL_L CH_INV_C CH_KEY_LABEL_R "RECONNECT " CH_KEY_LABEL_L CH_INV_S CH_KEY_LABEL_R "CHANGE SSID");
   screen_puts(9, 19, "Any other key to return");
@@ -460,20 +238,17 @@ void screen_show_info(int printerEnabled, AdapterConfig *ac)
 
   screen_puts(17, 7, ac->ssid);
   screen_puts(17, 8, ac->hostname);
-  screen_print_ip(17, 9, ac->localIP);
-  screen_print_ip(17, 10, ac->gateway);
-  screen_print_ip(17, 11, ac->dnsIP);
-  screen_print_ip(17, 12, ac->netmask);
-  screen_print_mac(17, 13, ac->macAddress);
-  screen_print_mac(17, 14, ac->bssid);
+  screen_puts(17, 9, ac->sLocalIP);
+  screen_puts(17, 10, ac->sGateway);
+  screen_puts(17, 11, ac->sDnsIP);
+  screen_puts(17, 12, ac->sNetmask);
+  screen_puts(17, 13, ac->sMacAddress);
+  screen_puts(17, 14, ac->sBssid);
   screen_puts(17, 15, ac->fn_version);
 }
 
 void screen_select_slot(char *e)
 {
-  unsigned int *s;
-  unsigned char d[40];
-
   screen_dlist_select_slot();
   set_active_screen(SCREEN_SELECT_SLOT);
 
@@ -487,25 +262,27 @@ void screen_select_slot(char *e)
   // Show file details if it's an existing file only.
   if ( create == false )
   {
-    // Modified time 
-    sprintf(d, "%8s %04u-%02u-%02u %02u:%02u:%02u", "MTIME:", (*e++) + 1970, *e++, *e++, *e++, *e++, *e++);
-    screen_puts(0, DEVICES_END_MOUNT_Y + 5, d);
+    // Modified time
+    // sprintf(d, "%8s %04u-%02u-%02u %02u:%02u:%02u", "MTIME:", (*e++) + 1970, *e++, *e++, *e++, *e++, *e++);
+
+    // Remove for now (wasn't in original config, not really all that important and removng sprintf usage), so skip over the 6 bytes for the file date/time info.
+    e += 6;
 
     // File size
     // only 2 bytes, so max size is 65535.. don't show for now until SIO method is changed to return more.
     // Result is unreliable since if the file was < 65535 bytes it will be ok, but if it was more we don't
     // know how to interpret the 2 bytes we have available to us.
     //s = (unsigned int *)e;
-    //sprintf(d, "%8s %u bytes", "SIZE:", *s); 
-    //sprintf(d, "%8s %u K", "SIZE:", *s >> 10); 
+    //sprintf(d, "%8s %u bytes", "SIZE:", *s);
+    //sprintf(d, "%8s %u K", "SIZE:", *s >> 10);
     //screen_puts(0, DEVICES_END_MOUNT_Y + 4, d);
 
     // Skip next 4 bytes to get to the filename (2 for the size, 2 for flags we don't care about)
     e += 4;
 
     // Filename
-    screen_puts(3, DEVICES_END_MOUNT_Y + 2, "FILE:");
-    screen_puts(9, DEVICES_END_MOUNT_Y + 2, e);
+    screen_puts(1, DEVICES_END_MOUNT_Y + 2, "FILE:");
+    screen_puts(7, DEVICES_END_MOUNT_Y + 2, e);
   }
 
   screen_hosts_and_devices_device_slots(DEVICES_START_MOUNT_Y, &deviceSlots, &deviceEnabled);
@@ -708,10 +485,6 @@ void screen_error(const char *msg)
 
 void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
 {
-  unsigned char retry = 5;
-  unsigned char i;
-  char temp[10];
-
   screen_dlist_hosts_and_devices();
   set_active_screen(SCREEN_HOSTS_AND_DEVICES);
 
@@ -719,51 +492,10 @@ void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
   bar_clear(false);
 
 
-  screen_puts(3, 0, "TNFS HOST LIST");
+  screen_puts(5, 0, "HOST LIST");
   screen_puts(4, 11, "DRIVE SLOTS");
 
-  while (retry > 0)
-  {
-    io_get_host_slots(&hostSlots[0]);
-
-    if (io_error())
-      retry--;
-    else
-      break;
-  }
-
-  if (io_error())
-  {
-    screen_error("ERROR READING HOST SLOTS");
-    while (!kbhit())
-    {
-    }
-    cold_start();
-  }
-
-  retry = 5;
-
   screen_hosts_and_devices_host_slots(&hostSlots[0]);
-
-  while (retry > 0)
-  {
-    io_get_device_slots(&deviceSlots[0]);
-
-    if (io_error())
-      retry--;
-    else
-      break;
-  }
-
-  if (io_error())
-  {
-    screen_error("ERROR READING DEVICE SLOTS");
-    // die();
-    while (!kbhit())
-    {
-    }
-    cold_start();
-  }
 
   screen_hosts_and_devices_device_slots(DEVICES_START_Y, &deviceSlots[0], "");
 }
@@ -780,7 +512,7 @@ void screen_hosts_and_devices_hosts(void)
   screen_clear_line(22);
   screen_clear_line(23);
   screen_puts(0, 22,
-              CH_KEY_1TO8 "Slot" CH_KEY_LABEL_L CH_INV_E CH_KEY_LABEL_R "dit Slot" CH_KEY_RETURN "Select Files");
+              CH_KEY_1TO8 "Slot" CH_KEY_LABEL_L CH_INV_E CH_KEY_LABEL_R "dit" CH_KEY_RETURN "Browse" CH_KEY_LABEL_L CH_INV_L CH_KEY_LABEL_R "obby");
   screen_puts(2, 23,
               CH_KEY_LABEL_L CH_INV_C CH_KEY_LABEL_R "onfig" CH_KEY_TAB "Drive Slots" CH_KEY_OPTION "Boot");
 
@@ -797,8 +529,8 @@ void screen_hosts_and_devices_devices(void)
   screen_clear_line(11);
   screen_puts(4, 11, "DRIVE SLOTS");
 
-  screen_puts(3, 22,
-              CH_KEY_1TO8 "Slot" CH_KEY_LABEL_L CH_INV_E CH_KEY_LABEL_R "ject" CH_KEY_LABEL_L CH_INV_C CH_INV_L CH_INV_E CH_INV_A CH_INV_R CH_KEY_LABEL_R "All Slots");
+  screen_puts(0, 22,
+              CH_KEY_1TO8 "Slot" CH_KEY_LABEL_L CH_INV_E CH_KEY_LABEL_R "ject" CH_KEY_LABEL_L CH_INV_C CH_INV_L CH_INV_E CH_INV_A CH_INV_R CH_KEY_LABEL_R "All Slots" CH_KEY_LABEL_L CH_INV_L CH_KEY_LABEL_R "obby");
   screen_puts(3, 23,
               CH_KEY_TAB "Hosts" CH_KEY_LABEL_L CH_INV_R CH_KEY_LABEL_R "ead " CH_KEY_LABEL_L CH_INV_W CH_KEY_LABEL_R "rite" CH_KEY_LABEL_L CH_INV_C CH_KEY_LABEL_R "onfig");
   bar_show(selected_device_slot + DEVICES_START_Y);
@@ -862,18 +594,12 @@ void screen_hosts_and_devices_devices_clear_all(void)
 
 void screen_hosts_and_devices_clear_host_slot(unsigned char i)
 {
-  // i comes in as the place in the array for this host slot. To get the corresponding position on the screen, add HOSTS_START_Y
-  screen_clear_line(i + HOSTS_START_Y);
+  // nothing to do, edit_line handles clearing correct space on screen, and doesn't touch the list numbers
 }
 
 void screen_hosts_and_devices_edit_host_slot(unsigned char i)
 {
-  char tmp[2] = {0, 0};
-  int newloc = i + HOSTS_START_Y;
-
-  screen_clear_line(newloc);
-  tmp[0] = newloc - HOSTS_START_Y + 0x31;
-  screen_puts(2, newloc, tmp);
+  // nothing to do, edit_line handles clearing correct space on screen, and doesn't touch the list numbers
 }
 
 void screen_hosts_and_devices_eject(unsigned char ds)
@@ -883,7 +609,7 @@ void screen_hosts_and_devices_eject(unsigned char ds)
 
   tmp[0] = ds + '1';
 
-  if ( mounting ) 
+  if ( mounting )
   {
     y = DEVICES_START_MOUNT_Y;
   }
@@ -985,8 +711,9 @@ void screen_dlist_set_wifi(void)
   memcpy((void *)DISPLAY_LIST, &config_dlist, sizeof(config_dlist));
   POKE(DISPLAY_LIST + 0x0a, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x0b, DL_CHR40x8x1);
-  POKE(DISPLAY_LIST + 0x1b, DL_CHR20x8x2);
+  POKE(DISPLAY_LIST + 0x1b, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x1c, DL_CHR20x8x2);
+  POKE(DISPLAY_LIST + 0x1d, DL_CHR20x8x2);
 }
 
 void screen_dlist_mount_and_boot(void)
@@ -1002,7 +729,7 @@ void screen_connect_wifi(NetConfig *nc)
   screen_clear();
   bar_clear(false);
 
-  screen_puts(0, 0, "WELCOME TO #FUJINET! CONNECTING TO NET");
+  screen_puts(0, 0, "WELCOME TO FUJINET! CONNECTING TO NET");
   screen_puts(2, 3, nc->ssid);
   bar_show(3);
 }
@@ -1023,48 +750,6 @@ void screen_dlist_hosts_and_devices(void)
   POKE(DISPLAY_LIST + 0x1b, DL_CHR40x8x1);
   POKE(DISPLAY_LIST + 0x1c, DL_CHR40x8x1);
 }
-
-int _screen_input(unsigned char x, unsigned char y, char *s, unsigned char maxlen)
-{
-  unsigned char k, o;
-  unsigned char *input_start_ptr;
-
-  o = strlen(s);                // assign to local var the size of s which contains the current string
-  set_cursor(x, y);             // move the cusor to coordinates x,y
-  input_start_ptr = cursor_ptr; // assign the value currently in cursor_ptr to local var input_start
-  screen_append(s);             // call screen_append function and pass by value (a copy) the contents of s
-
-  POKE(cursor_ptr, 0x80); // turn on cursor
-
-  // Start capturing the keyboard input into local var k
-  do
-  {
-    k = cgetc(); // Capture keyboard input into k
-
-    if (k == KCODE_ESCAPE) // KCODE_ESCAPE is the ATASCI code for the escape key which is commonly used to cancel.
-      return -1;
-
-    if (k == KCODE_BACKSP) // KCODE_BACKSP is the ATASCI backspace key.  This if clause test for backspace and updates cursor_ptr to the remainder of contents upto the last backspace
-    {
-      if (cursor_ptr > input_start_ptr) // execute only if cursor_ptr is greater than input_start_ptr
-      {
-        s[--o] = 0;                  //
-        POKEW(--cursor_ptr, 0x0080); // move the last bit of the cursor_ptr back one and write the location of the cursor_ptr contents to user zero page address 0x80
-      }
-    }
-    else if ((k > 0x1F) && (k < 0x80)) // Display printable ascii to screen
-    {
-      if (o < maxlen - 1)
-      {
-        put_char(k);
-        s[o++] = k;
-        POKE(cursor_ptr, 0x80);
-      }
-    }
-  } while (k != KCODE_RETURN); // Continue to capture keyboard input until return (0x9B)
-  POKE(cursor_ptr, 0x00);      // clear cursor
-}
-
 
 #ifdef DEBUG
 // Debugging function to show line #'s, used to test if the Y coordinate calculations are working.

@@ -4,15 +4,23 @@
  * Set new WiFi connection
  */
 
+#ifdef _CMOC_VERSION_
+#include <cmoc.h>
+#include "coco/io.h"
+#include "coco/screen.h"
+#include "coco/bar.h"
+#include "coco/input.h"
+#include "coco/globals.h"
+#else
 #include <string.h>
-#include <conio.h>
-#include <stdio.h>
+#endif /* _CMOC_VERSION_ */
+
 #include "set_wifi.h"
 #include "die.h"
+#include "fuji_typedefs.h"
 
 #ifdef BUILD_ADAM
 #include "adam/io.h"
-#include "adam/fuji_typedefs.h"
 #include "adam/screen.h"
 #include "adam/bar.h"
 #include "adam/input.h"
@@ -20,11 +28,7 @@
 #endif /* BUILD_ADAM */
 
 #ifdef BUILD_APPLE2
-#ifdef BUILD_A2CDA
-#pragma cda "FujiNet Config" Start ShutDown
-#endif /* BUILD_A2CDA */
 #include "apple2/io.h"
-#include "apple2/fuji_typedefs.h"
 #include "apple2/screen.h"
 #include "apple2/bar.h"
 #include "apple2/input.h"
@@ -33,7 +37,6 @@
 
 #ifdef BUILD_ATARI
 #include "atari/io.h"
-#include "atari/fuji_typedefs.h"
 #include "atari/screen.h"
 #include "atari/bar.h"
 #include "atari/input.h"
@@ -42,7 +45,6 @@
 
 #ifdef BUILD_C64
 #include "c64/io.h"
-#include "c64/fuji_typedefs.h"
 #include "c64/screen.h"
 #include "c64/bar.h"
 #include "c64/input.h"
@@ -51,7 +53,6 @@
 
 #ifdef BUILD_PC8801
 #include "pc8801/io.h"
-#include "pc8801/fuji_typedefs.h"
 #include "pc8801/screen.h"
 #include "pc8801/bar.h"
 #include "pc8801/input.h"
@@ -60,20 +61,39 @@
 
 #ifdef BUILD_PC6001
 #include "pc6001/io.h"
-#include "pc6001/fuji_typedefs.h"
 #include "pc6001/screen.h"
 #include "pc6001/bar.h"
 #include "pc6001/input.h"
 #include "pc6001/globals.h"
 #endif /* BUILD_PC6001 */
 
+#ifdef BUILD_PMD85
+#include "pmd85/io.h"
+#include "pmd85/screen.h"
+#include "pmd85/bar.h"
+#include "pmd85/input.h"
+#include "pmd85/globals.h"
+#endif /* BUILD_PMD85 */
+
+#ifdef BUILD_RC2014
+#include "rc2014/io.h"
+#include "rc2014/screen.h"
+#include "rc2014/bar.h"
+#include "rc2014/input.h"
+#include "rc2014/globals.h"
+#endif /* BUILD_RC2014 */
+
 WSSubState ws_subState;
 
 NetConfig nc;
 
-static unsigned char numNetworks;
+unsigned char numNetworks;
 
+#ifdef _CMOC_VERSION_
+void set_wifi_set_ssid(int i)
+#else
 void set_wifi_set_ssid(unsigned char i)
+#endif
 {
   SSIDInfo *s = io_get_scan_result(i);
   memcpy(nc.ssid,s->ssid,32);
@@ -130,14 +150,17 @@ void set_wifi_scan(void)
 
 void set_wifi_done(void)
 {
-  io_set_ssid(&nc);
-  ws_subState=WS_SCAN;
+  int result = io_set_ssid(&nc);
+  // always (good or bad) go to connect_wifi.
+  // I had used result to only show this when we have good return, but
+  // the connect_wifi shows error messages for us and jumps back to set wifi
+  // anyway when there's an error, so it's the correct choice either way.
   state = CONNECT_WIFI;
 }
 
 void set_wifi(void)
 {
-
+  ws_subState = WS_SCAN;
   while (state == SET_WIFI)
   {
     switch (ws_subState)
@@ -156,7 +179,7 @@ void set_wifi(void)
       break;
     case WS_DONE:
       set_wifi_done();
-      return;
+      break;
     }
   }
 }

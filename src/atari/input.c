@@ -6,7 +6,6 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <atari.h>
 #include <conio.h>
 #include <string.h>
@@ -93,23 +92,29 @@ void input_line_set_wifi_custom(char *c)
 {
   bar_show(20);
   memset(c, 0, 32);
-  _screen_input(2, 20, c, 32);
+  edit_line(2, 20, c, 32, false);
 }
 
 void input_line_set_wifi_password(char *c)
 {
-  // bar_show(19);
-  _screen_input(0, 21, c, 64);
+  char stars[65];
+  int l = strlen(c);
+  memset(stars, 0, 65);
+  memset(stars, '*', l);
+  if (l > 64) l = 64;
+  stars[l] = '\0';
+  screen_puts(0, 21, stars);
+  edit_line(0, 21, c, 64, true);
 }
 
 void input_line_hosts_and_devices_host_slot(unsigned char i, unsigned char o, char *c)
 {
-  _screen_input(5, i + HOSTS_START_Y, c, 32);
+  edit_line(5, i + HOSTS_START_Y, c, 32, false);
 }
 
 void input_line_filter(char *c)
 {
-  _screen_input(5, 2, c, 32);
+  edit_line(5, 2, c, 32, false);
 }
 
 unsigned char input_select_file_new_type(void)
@@ -122,7 +127,7 @@ unsigned long input_select_file_new_size(unsigned char t)
 {
   char temp[8];
   memset(temp, 0, sizeof(temp));
-  _screen_input(34, 21, temp, sizeof(temp));
+  edit_line(34, 21, temp, sizeof(temp), false);
 
   // TODO: make an enum so these are easier to understand
   switch (temp[0])
@@ -158,14 +163,14 @@ unsigned long input_select_file_new_custom(void)
 
   // Number of Sectors
   memset(tmp_str, 0, sizeof(tmp_str));
-  _screen_input(11, 20, tmp_str, sizeof(tmp_str));
+  edit_line(11, 20, tmp_str, sizeof(tmp_str), false);
   custom_numSectors = atoi(tmp_str);
 
   // Sector Size
   memset(tmp_str, 0, sizeof(tmp_str));
   while (tmp_str[0] != '1' && tmp_str[0] != '2' && tmp_str[0] != '5')
   {
-    _screen_input(27, 21, tmp_str, sizeof(tmp_str));
+    edit_line(27, 21, tmp_str, sizeof(tmp_str), false);
   }
 
   switch (tmp_str[0])
@@ -188,7 +193,7 @@ unsigned long input_select_file_new_custom(void)
 void input_select_file_new_name(char *c)
 {
   // TODO: Find out actual max length we shoud allow here. Input variable is [128] but do we allow filenames that large?
-  _screen_input(0, 21, c, 128);
+  edit_line(0, 21, c, 128, false);
 }
 
 bool input_select_slot_build_eos_directory(void)
@@ -202,7 +207,7 @@ void input_select_slot_build_eos_directory_label(char *c)
 WSSubState input_set_wifi_select(void)
 {
   unsigned char k;
-  unsigned char temp[29];
+  //unsigned char temp[29];
   k = input_ucase();
 
   // sprintf(temp, "y=%d, nn=%d, sn=%d", bar_get(), numNetworks, selected_network);
@@ -262,7 +267,6 @@ HDSubState input_hosts_and_devices_hosts(void)
 {
   // Up in the hosts section.
   unsigned char k;
-  unsigned char y;
   char temp[20];
 
   if (input_handle_console_keys() == 0x03) // "Option" key
@@ -314,6 +318,22 @@ HDSubState input_hosts_and_devices_hosts(void)
   case 'C':
     state = SHOW_INFO;
     return HD_DONE;
+  case 'L':
+    // boot lobby.
+    memset(temp, 0, sizeof(temp));
+    screen_puts(0,24,"Boot Lobby Y/N? ");
+    edit_line(16,24,temp,2, false);
+    screen_clear_line(24);
+    switch (temp[0])
+    {
+      case 'Y':
+      case 'y':
+        mount_and_boot_lobby();
+        return HD_DONE;
+      default: // Anything but Y/y take to mean "no"
+        return HD_HOSTS;
+      }
+    return HD_HOSTS;
   case KCODE_RETURN:
     selected_host_slot = bar_get() - HOSTS_START_Y;
     if ( !wifiEnabled && strcmp(hostSlots[selected_host_slot],"SD") != 0) // Don't go in a TNFS host if wifi is disabled.
@@ -342,7 +362,6 @@ HDSubState input_hosts_and_devices_devices(void)
 {
   // Down in the devices section.
   unsigned char k;
-  unsigned char i;
   char temp[20];
 
   if (input_handle_console_keys() == 0x03)
@@ -397,18 +416,35 @@ HDSubState input_hosts_and_devices_devices(void)
   case 'R':
     // set device mode to read
     selected_device_slot = bar_get() - DEVICES_START_Y;
-    set_device_slot_mode(selected_device_slot, 1);
+    hosts_and_devices_devices_set_mode(MODE_READ);
     screen_hosts_and_devices_device_slots(DEVICES_START_Y, &deviceSlots[0], "");
     return HD_DEVICES;
   case 'W':
     // set device mode to write
     selected_device_slot = bar_get() - DEVICES_START_Y;
-    set_device_slot_mode(selected_device_slot, 2);
+    hosts_and_devices_devices_set_mode(MODE_WRITE);
     screen_hosts_and_devices_device_slots(DEVICES_START_Y, &deviceSlots[0], "");
     return HD_DEVICES;
   case 'C':
     state = SHOW_INFO;
     return HD_DONE;
+  case 'L':
+    // boot lobby.
+    // boot lobby.
+    memset(temp, 0, sizeof(temp));
+    screen_puts(0,24,"Boot Lobby Y/N? ");
+    edit_line(16,24,temp,2, false);
+    screen_clear_line(24);
+    switch (temp[0])
+    {
+      case 'Y':
+      case 'y':
+        mount_and_boot_lobby();
+        return HD_DONE;
+      default: // Anything but Y/y take to mean "no"
+        return HD_DEVICES;
+      }
+    return HD_DEVICES;
   case '!':
     mount_and_boot();
   default:
@@ -419,8 +455,7 @@ HDSubState input_hosts_and_devices_devices(void)
 SFSubState input_select_file_choose(void)
 {
   unsigned char k;
-  unsigned char y;
-  unsigned char temp[30];
+  unsigned entryType;
 
   if (input_handle_console_keys() == 0x03)
   {
@@ -465,6 +500,7 @@ SFSubState input_select_file_choose(void)
     return SF_DEVANCE_FOLDER;
 
   case '<':
+  case '+':
     if ( strlen(path) == 1 && pos <= 0 ) // We're at the root of the filesystem, and we're on the first page - go back to hosts/devices screen.
     {
       state = HOSTS_AND_DEVICES;
@@ -472,7 +508,7 @@ SFSubState input_select_file_choose(void)
     }
     if ( pos > 0 )
       return SF_PREV_PAGE;
-    else 
+    else
       return SF_DEVANCE_FOLDER;
     return SF_CHOOSE;
   case '>':
@@ -510,8 +546,7 @@ SFSubState input_select_file_choose(void)
 SSSubState input_select_slot_choose(void)
 {
   unsigned char k;
-  unsigned char y;
-  unsigned char temp[30];
+//  unsigned char temp[30];
   if (input_handle_console_keys() == 0x03)
   {
     mount_and_boot();
@@ -561,6 +596,7 @@ SSSubState input_select_slot_choose(void)
     return SS_CHOOSE;
   case KCODE_ESCAPE:
     state = SELECT_FILE;
+    backToFiles = true;
     return SS_DONE;
   case KCODE_RETURN: // For Atari I think we need to ask for file mode after this, it's not in the main select_slot.c code.
     selected_device_slot = bar_get() - DEVICES_START_MOUNT_Y;
@@ -571,6 +607,7 @@ SSSubState input_select_slot_choose(void)
     if (!k)
     {
       state = SELECT_FILE;
+      backToFiles = true;
     }
     return SS_DONE;
   default:
@@ -582,24 +619,30 @@ unsigned char input_select_slot_mode(char *mode)
 {
   unsigned char k = 0;
 
-  while (k == 0)
+  while (1)
   {
     k = input_ucase();
 
-    if (k == KCODE_ESCAPE)
+    switch (k)
     {
+    case KCODE_ESCAPE:
       return 0;
-    }
-
-    if (k == 'W')
-    {
+      break;
+    case 'W':
       mode[0] = 2;
-    }
-    else
+      return 1;
+      break;
+    case KCODE_RETURN:
+    case 'R':
       mode[0] = 1;
+      return 1;
+      break;
+    default:
+      break;
+    }
   }
-  return 1;
 }
+
 /*
  *  Handle inupt for the "show info" screen.
  *
@@ -635,7 +678,7 @@ DHSubState input_destination_host_slot_choose(void)
 {
   // Up in the hosts section.
   unsigned char k;
-  char temp[20];
+//  char temp[20];
 
   k = input_ucase();
 
@@ -685,38 +728,4 @@ DHSubState input_destination_host_slot_choose(void)
   }
 }
 
-void set_device_slot_mode(unsigned char slot, unsigned char mode)
-{
-  unsigned char tmp_hostSlot;
-  unsigned char tmp_file[FILE_MAXLEN];
-
-  if ( deviceSlots[slot].hostSlot == 0xFF )
-  {
-    return;
-  }
-
-  tmp_hostSlot = deviceSlots[slot].hostSlot;
-  memcpy(tmp_file, deviceSlots[slot].file, FILE_MAXLEN);
-  io_get_filename_for_device_slot(slot, fn);
-
-  io_umount_disk_image(slot);
-
-  deviceSlots[slot].hostSlot = tmp_hostSlot;
-  deviceSlots[slot].mode = mode;
-  memcpy(deviceSlots[slot].file, tmp_file, FILE_MAXLEN);
-
-  io_set_device_filename(slot, fn);
-  io_put_device_slots(&deviceSlots[0]);
-  io_mount_disk_image(slot, mode);
-
-  // If we couldn't mount read/write, then re-mount again as read-only
-  /*
-  in original config, this repeated same log (using same mode..)
-  if ( io_error() )  
-  {
-    io_umount_disk_image(slot);
-
-  }
-  */
-}
 #endif

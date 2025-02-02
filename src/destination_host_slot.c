@@ -4,8 +4,18 @@
  * Select a Destination Host Slot
  */
 
+#ifdef _CMOC_VERSION_
+#include <cmoc.h>
+#include "coco/stdbool.h"
+#include "coco/screen.h"
+#include "coco/input.h"
+#include "coco/globals.h"
+#include "coco/io.h"
+#include "coco/bar.h"
+#else
 #include <stdlib.h>
 #include <string.h>
+#endif /* CMOC_VERSION */
 #include "select_slot.h"
 
 #ifdef BUILD_ADAM
@@ -19,9 +29,6 @@
 #endif /* BUILD_ADAM */
 
 #ifdef BUILD_APPLE2
-#ifdef BUILD_A2CDA
-#pragma cda "FujiNet Config" Start ShutDown
-#endif /* BUILD_A2CDA */
 #include "apple2/screen.h"
 #include "apple2/input.h"
 #include "apple2/globals.h"
@@ -60,6 +67,22 @@
 #include "pc6001/io.h"
 #include "pc6001/bar.h"
 #endif /* BUILD_PC6001 */
+
+#ifdef BUILD_PMD85
+#include "pmd85/screen.h"
+#include "pmd85/input.h"
+#include "pmd85/globals.h"
+#include "pmd85/io.h"
+#include "pmd85/bar.h"
+#endif /* BUILD_PMD85 */
+
+#ifdef BUILD_RC2014
+#include "rc2014/screen.h"
+#include "rc2014/input.h"
+#include "rc2014/globals.h"
+#include "rc2014/io.h"
+#include "rc2014/bar.h"
+#endif /* BUILD_RC2014 */
 
 #include "destination_host_slot.h"
 
@@ -105,21 +128,21 @@ void destination_host_slot(void)
   while (state==DESTINATION_HOST_SLOT)
     {
       switch(dh_subState)
-	{
-	case DH_INIT:
-	  destination_host_slot_init();
-	  break;
-	case DH_DISPLAY:
-	  destination_host_slot_display();
-	  break;
-	case DH_CHOOSE:
-	  destination_host_slot_choose();
-	  break;
-	case DH_DONE:
-	  destination_host_slot_done();
-	  break;
-	case DH_ABORT:
-	  break;
-	}
+      {
+      case DH_INIT:
+        destination_host_slot_init();
+        break;
+      case DH_DISPLAY:
+        destination_host_slot_display();
+        break;
+      case DH_CHOOSE:
+        destination_host_slot_choose();
+        break;
+      case DH_DONE:
+        destination_host_slot_done();
+        break;
+      case DH_ABORT:
+        break;
+      }
     }
 }

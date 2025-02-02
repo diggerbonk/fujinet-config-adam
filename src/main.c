@@ -1,9 +1,14 @@
 /**
- * #FujiNet for ADAM Configuration Tool
+ * FujiNet for ADAM Configuration Tool
  *
  */
 
+#ifdef _CMOC_VERSION_
+#include "coco/stdbool.h"
+#else
 #include <stdlib.h>
+#endif /* CMOC_VERSION */
+
 #include "typedefs.h"
 #include "check_wifi.h"
 #include "connect_wifi.h"
@@ -21,9 +26,6 @@
 #endif /* BUILD_ADAM */
 
 #ifdef BUILD_APPLE2
-#ifdef BUILD_A2CDA
-#pragma cda "FujiNet Config" Start ShutDown
-#endif /* BUILD_A2CDA */
 #include "apple2/io.h"
 #include "apple2/screen.h"
 #include "apple2/sp.h"
@@ -51,42 +53,40 @@
 #include "pc6001/screen.h"
 #endif /* BUILD_PC6001 */
 
-#ifdef __ORCAC__
-#include <texttool.h>
-#endif
+#ifdef BUILD_PMD85
+#include "pmd85/io.h"
+#include "pmd85/screen.h"
+#endif /* BUILD_PMD85 */
+
+#ifdef BUILD_RC2014
+#include "rc2014/io.h"
+#include "rc2014/screen.h"
+#endif /* BUILD_RC2014 */
 
 State state=HOSTS_AND_DEVICES;
+bool backToFiles=false;
+bool backFromCopy=false;
+
+#ifdef _CMOC_VERSION_
+extern void io_init();
+extern void screen_init();
+extern void io_set_boot_config();
+extern void io_boot();
+#define true 1
+#define false 0
+#endif /* CMOC_VERSION */
 
 void setup(void)
 {
-  #ifdef __ORCAC__
-	TextStartUp();
-	SetInGlobals(0x7f, 0x00);
-	SetOutGlobals(0xff, 0x80);
-	SetInputDevice(basicType, 3);
-	SetOutputDevice(basicType, 3);
-	InitTextDev(input);
-	InitTextDev(output);
-	WriteChar(0x91);  // Set 40 col
-	WriteChar(0x85);  // Cursor off
-  #endif
   io_init();
   screen_init();
 }
 
 void done(void)
 {
-  #ifdef __ORCAC__
-	sp_done();
-  	WriteChar(0x8c);  // Clear screen
-	WriteChar(0x92);  // Set 80 col
-	WriteChar(0x86);  // Cursor on
-	TextShutDown();
-  #else
   // reboot here
   io_set_boot_config(0); // disable config
   io_boot();             // and reboot.
-  #endif
 }
 
 void run(void)
@@ -122,32 +122,25 @@ void run(void)
 		case SHOW_INFO:
 			show_info();
 			break;
+		#ifdef BUILD_APPLE2
+		case SHOW_DEVICES:
+			io_list_devs();
+			break;
+		#endif
 		case DONE:
 			done();
-			#ifdef __ORCAC__
-			return;
+			#ifdef BUILD_A2CDA
+				return;
 			#endif
 			break;
 		}
   }
 }
 
-#ifdef BUILD_A2CDA
-void Start(void)
+int main(void)
 {
 	setup();
 	state = CHECK_WIFI;
 	run();
+	return 0;
 }
-
-void ShutDown(void)
-{
-}
-#else
-void main(void)
-{
-	setup();
-	state = CHECK_WIFI;
-	run();
-}
-#endif /* BUILD_A2CDA */
