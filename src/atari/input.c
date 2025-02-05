@@ -68,17 +68,18 @@ unsigned char input_handle_joystick(void)
       return 0x1D;
     case 11:
       if (OS.strig0 == 1)
-        return '<';
+        return '+';
       else
         return '!'; // joy left and fire
     case 7:
-      return '>';
+      return '*';
     }
   }
   else if (OS.strig0 == 0)
   {
+    rtclr();
     POKE(0x4d, 0); // Turn off ATRACT (screen saver) since it doesn't turn off via joystick movement like it does with a keypress.
-    return 0x9B;
+    return KCODE_RETURN;
   }
   else
     return 0;
@@ -114,7 +115,7 @@ void input_line_hosts_and_devices_host_slot(unsigned char i, unsigned char o, ch
 
 void input_line_filter(char *c)
 {
-  edit_line(5, 2, c, 32, false);
+  edit_line(7, 22, c, 32, false);
 }
 
 unsigned char input_select_file_new_type(void)
@@ -457,7 +458,7 @@ SFSubState input_select_file_choose(void)
   unsigned char k;
   unsigned entryType;
 
-  if (input_handle_console_keys() == 0x03)
+  if (input_handle_console_keys() == 0x03) // option
   {
     mount_and_boot();
   }
@@ -465,7 +466,7 @@ SFSubState input_select_file_choose(void)
   k = input_ucase();
 
   //sprintf(temp, "y=%d,ve=%d,pos=%d,eof=%d", bar_get(), _visibleEntries, pos, dir_eof);
-  //screen_debug(temp);
+ // screen_debug(temp);
 
   switch (k)
   {
@@ -493,27 +494,9 @@ SFSubState input_select_file_choose(void)
       bar_down();
     }
     return SF_CHOOSE;
-  case KCODE_RETURN:
-  case '*': // took from fujinet-config
-    pos += bar_get() - FILES_START_Y;
-    screen_select_file_clear_long_filename();
-    entryType = select_file_entry_type();
-
-    if (entryType == ENTRY_TYPE_FOLDER)
-      return SF_ADVANCE_FOLDER;
-    else if (entryType == ENTRY_TYPE_LINK)
-      return SF_LINK;
-    else
-    {
-      strncpy(source_path, path, 224);
-      old_pos = pos;
-      return SF_DONE;
-    }
   case KCODE_BACKSP:
     return SF_DEVANCE_FOLDER;
-
-  case '<':
-  case '+':
+  case '+': // left
     if ( strlen(path) == 1 && pos <= 0 ) // We're at the root of the filesystem, and we're on the first page - go back to hosts/devices screen.
     {
       state = HOSTS_AND_DEVICES;
@@ -523,11 +506,15 @@ SFSubState input_select_file_choose(void)
       return SF_PREV_PAGE;
     else
       return SF_DEVANCE_FOLDER;
-    return SF_CHOOSE;
-  case '>':
+    return SF_CHOOSE;    
+  case '*': //  right
     if ((ENTRIES_PER_PAGE == _visibleEntries ) && (dir_eof == false))
       return SF_NEXT_PAGE;
     return SF_CHOOSE;
+  case KCODE_RETURN:
+    return SF_SELECTED;
+//  case KCODE_BACKSP:
+//    return SF_DEVANCE_FOLDER;
   case KCODE_ESCAPE:
     state = HOSTS_AND_DEVICES;
     return SF_DONE;

@@ -22,7 +22,6 @@ void mount_and_boot_lobby(void)
 void mount_and_boot(void)
 {
     screen_mount_and_boot();
-    set_active_screen(SCREEN_MOUNT_AND_BOOT);
 
     if (!io_get_device_slots(&deviceSlots[0]))
     {
@@ -37,9 +36,9 @@ void mount_and_boot(void)
     }
 
     screen_clear();
-    screen_puts(3, 0, "MOUNT AND BOOT");
+    cputsxy(3, 0, "MOUNT AND BOOT");
 
-    screen_puts(0, 3, "Mounting all Host and Device Slots");
+    cputsxy(0, 4, "Mounting all Host and Device Slots");
 
     if (!io_mount_all())
     {
@@ -49,7 +48,7 @@ void mount_and_boot(void)
     }
     else
     {
-        screen_puts(9, 22, "SUCCESSFUL! BOOTING");
+        cputsxy(9, 22, "SUCCESSFUL! BOOTING");
         io_set_boot_config(0);
         cold_start();
     }

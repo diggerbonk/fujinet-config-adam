@@ -114,6 +114,7 @@ unsigned char entry_size[ENTRIES_PER_PAGE];
 unsigned short entry_timer = ENTRY_TIMER_DUR;
 bool long_entry_displayed = false;
 bool copy_mode = false;
+unsigned char selected_file_type = 0;
 
 extern unsigned char copy_host_slot;
 extern bool backToFiles;
@@ -184,7 +185,7 @@ unsigned char select_file_display(void)
 
   for (i = 0; i < ENTRIES_PER_PAGE; i++)
   {
-    e = io_read_directory(DIR_MAX_LEN, 0);
+    e = io_read_directory(39/*DIR_MAX_LEN*/, 0x40);
 #ifdef BUILD_ADAM
 #define FUDGE_OFFSET 2
 #else
@@ -197,14 +198,14 @@ unsigned char select_file_display(void)
     }
     else
     {
-      entry_size[i] = (unsigned char)strlen(e);
+      entry_size[i] = (unsigned char)strlen(e+1);
       visibleEntries++; // could filter on e[0] to deal with message entries like on FUJINET.PL
-      screen_select_file_display_entry(i, e, 0);
+      screen_select_file_display_entry(i, e+2, e[0]*16 + e[1]);
     }
   }
 
   // Do one more read to check EOF
-  e = io_read_directory(DIR_MAX_LEN, 0);
+  e = io_read_directory(39 /*DIR_MAX_LEN*/, 0x40);
   if (e[1] == 0x7F) // was e[2]
     dir_eof = true;
 
@@ -225,10 +226,19 @@ void select_file_set_source_filename(void)
   char entry[128];
 
   io_open_directory(selected_host_slot, path, filter);
+
+  if (io_error()) 
+  {
+    sf_subState = SF_DONE;
+    state = HOSTS_AND_DEVICES;
+    return;
+  }
+
   io_set_directory_position(pos);
   strcpy(entry, io_read_directory(128, 0));
   strcat(path, entry);
   strcpy(source_filename, entry);
+  io_close_directory();
 }
 
 void select_display_long_filename(void)
@@ -236,7 +246,7 @@ void select_display_long_filename(void)
   const char *e;
 
 #ifdef BUILD_ATARI
-  if ((entry_size[bar_get() - FILES_START_Y] > 30) && (entry_timer == 0))
+  if ((entry_size[bar_get() - FILES_START_Y] > LONG_FILENAME) && (entry_timer == 0))
 #else
   if ((entry_size[bar_get()] > 30) && (entry_timer == 0))
 #endif
@@ -244,12 +254,20 @@ void select_display_long_filename(void)
     if (long_entry_displayed == false)
     {
       io_open_directory(selected_host_slot, path, filter);
-#ifdef BUILD_ATARI
+
+      if (io_error()) 
+      {
+          sf_subState = SF_DONE;
+          state = HOSTS_AND_DEVICES;
+          return;
+      }
+
+#ifdef BUILD_ATARI      
       io_set_directory_position(pos + bar_get() - FILES_START_Y);
 #else
       io_set_directory_position(pos + bar_get());
 #endif
-      e = io_read_directory(64, 0);
+      e = io_read_directory(64, 0x20);
       screen_select_file_display_long_filename(e);
       io_close_directory();
       long_entry_displayed = true;
@@ -289,14 +307,23 @@ void select_file_filter(void)
 
 void select_file_choose(char visibleEntries)
 {
-  char k = 0;
-
   screen_select_file_choose(visibleEntries);
 
   while (sf_subState == SF_CHOOSE)
   {
     sf_subState = input_select_file_choose();
-    select_display_long_filename();
+    if (sf_subState == SF_SELECTED) {
+      pos += (bar_get() - FILES_START_Y);
+      selected_file_type = select_file_type();
+      if (selected_file_type == 0) 
+      {
+        sf_subState = SF_CHOOSE;
+        pos -= (bar_get() - FILES_START_Y);
+      }
+      else if (selected_file_type==3) sf_subState = SF_LINK;
+      else if (selected_file_type==1 || selected_file_type ==4) sf_subState = SF_ADVANCE_FOLDER;
+      else sf_subState = SF_DONE;
+    }
   }
 }
 
@@ -314,12 +341,13 @@ void select_file_link(void)
       state = HOSTS_AND_DEVICES;
       return;
   }
-
   io_set_directory_position(pos);
 
   e = io_read_directory(128, 0x20);
 
-  strcpy(tnfsHostname, &e[1]);
+  // old-style links have a '+' prefix
+  if (e[0] == '+') strcpy(tnfsHostname, &e[1]);
+  else strcpy(tnfsHostname, e);
 
   io_close_directory();
 
@@ -340,9 +368,16 @@ void select_file_advance(void)
 
   io_open_directory(selected_host_slot, path, filter);
 
+  if (io_error()) 
+  {
+    sf_subState = SF_DONE;
+    state = HOSTS_AND_DEVICES;
+    return;
+  }
+
   io_set_directory_position(pos);
 
-  e = io_read_directory(128, 1);
+  e = io_read_directory(128, 0x20);
 
   strcat(path, e); // append directory entry to end of current path
 
@@ -357,8 +392,10 @@ void select_file_advance(void)
 void select_file_devance(void)
 {
   int i;
-  char *p = strrchr(path, '/'); // find end of directory string (last /)
-
+  char *p;
+  
+  p = strrchr(path, '/'); // find end of directory string (last /)
+  if (p == path) p += (strlen(path)-1);
   bar_clear(false);
 
   while (*--p != '/')
@@ -381,18 +418,22 @@ void select_file_devance(void)
 
 unsigned select_file_entry_type(void)
 {
-  const char *e;
+    return select_file_type();
+}
+
+unsigned select_file_type(void)
+{
+  char *e;
   unsigned result;
 
   io_open_directory(selected_host_slot, path, filter);
 
+  if (io_error()) return 0;
+
   io_set_directory_position(pos);
 
-  e = io_read_directory(128, 0);
-
-  if (strrchr(e, '/') != NULL) result = ENTRY_TYPE_FOLDER;
-  else if (e[0] == '+') result = ENTRY_TYPE_LINK;
-  else result = ENTRY_TYPE_FILE;
+  e = io_read_directory(16, 0x40); // 0x40 -> get type info
+  result = e[0]*16 + e[1];
 
   io_close_directory();
 
@@ -458,8 +499,6 @@ void select_file_done(void)
 {
   if (copy_mode == true)
     state = PERFORM_COPY;
-  //  else if (select_file_is_folder())
-  //    sf_subState=SF_ADVANCE_FOLDER;
   else
     state = SELECT_SLOT;
 }

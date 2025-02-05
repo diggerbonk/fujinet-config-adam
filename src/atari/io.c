@@ -43,10 +43,11 @@ void io_init(void)
 {
   OS.noclik = 0xFF;
   OS.shflok = 0;
-  OS.color0 = 0x9f;
-  OS.color1 = 0x0f;
-  OS.color2 = 0x90;
-  OS.color4 = 0x90;
+  OS.color0 = 0x00;
+  OS.color1 = COLOR_FONT; // gr.0 font
+  OS.color3 = 0x00; 
+  OS.color2 = COLOR_BACKGROUND; // background
+  OS.color4 = COLOR_BORDER; // frame
   OS.coldst = 1;
   OS.sdmctl = 0; // Turn off screen
 }
@@ -158,8 +159,28 @@ void io_open_directory(unsigned char hs, char *p, char *f)
     strcpy(&response[strlen(response) + 1], f);
     _p = &response;
   }
-  fuji_open_directory(hs, _p);
+
+  // TODO: get rid of this old siov call, update fuji_open_directory
+  // to take extra parameter so we can use it instead
+  // fuji_open_directory(hs, _p);
+  OS.dcb.dcomnd = 0xF7;
+  OS.dcb.dstats = 0x80;
+  OS.dcb.dbyt = 256;
+  OS.dcb.daux1 = hs;
+  OS.dcb.daux2 = 0x01;
+  siov();
 }
+
+// Bits in a:
+//
+//   1000 0000 : Get extended file information
+//   0100 0000 : Return type info in first two bytes
+//   0010 0000 : Return long (item) name
+//   0001 0000 : Unused
+//   0000 1000 : ""
+//   0000 0100 : ""
+//   0000 0010 : ""
+//   0000 0001 : ""
 
 char *io_read_directory(unsigned char maxlen, unsigned char a)
 {
