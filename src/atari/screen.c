@@ -11,6 +11,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <conio.h>
 #include <stdint.h>
 #include <peekpoke.h>
@@ -49,47 +50,6 @@ unsigned char fontPatch[56] = {
     0  ,0  ,254,0  ,254,0  ,254,0   // CH_MENU
 };
 
-void set_active_screen(unsigned char screen)
-{
-  active_screen = screen;
-}
-
-/**********************
- * Print ATASCII string to display memory.  Note: ATASCII is not a 1:1 mapping for ASCII.  It is a ven diagram with significant overlap.
- */
-void put_char(char c)
-{
-  char offset;
-  if (c < 32)
-  {
-    offset = 64;
-  }
-  else if (c < 96)
-  {
-    offset = -32;
-  }
-  else
-  {
-    offset = 0;
-  }
-  POKE(cursor_ptr++, c + offset); // Insert into the locaiton in memory for next bit in cursor_ptr the ATASCI character.  c+offset is the ATASCI character desired to be displayed.
-}
-
-void screen_append(char *s)
-{
-  while (*s != 0)
-  {
-    put_char(*s);
-    ++s;
-  }
-}
-
-void screen_puts(unsigned char x, unsigned char y, char *s)
-{
-  set_cursor(x, y);
-  screen_append(s);
-}
-
 void font_init()
 {
   // Copy ROM font
@@ -114,8 +74,9 @@ void screen_mount_and_boot()
   bar_clear(false);
 }
 
-void screen_set_wifi(AdapterConfigExtended *ac)
+void screen_set_wifi(AdapterConfig *ac)
 {
+  char mactmp[3];
   unsigned char i = 0;
   unsigned char x = 13;
 
@@ -137,7 +98,6 @@ void screen_set_wifi(AdapterConfigExtended *ac)
     cputsxy(x, 2, mactmp);
     x += 3;
   }
-
 }
 
 void screen_set_wifi_print_rssi(SSIDInfo *s, unsigned char i)
@@ -223,11 +183,23 @@ void screen_print_mac(unsigned char x, unsigned char y, unsigned char *buf)
   cputsxy(x, y, mactmp);
 }
 
+/**
+ * Convert hex to a string.  Special hex output of numbers under 16, e.g. 9 -> 09, 10 -> 0A
+ */
+void itoa_hex(unsigned char val, char *buf)
+{
+
+  if (val < 16)
+  {
+    *(buf++) = '0';
+  }
+  itoa(val, buf, 16);
+}
 
 /*
  * Display the 'info' screen
  */
-void screen_show_info(int printerEnabled, AdapterConfigExtended *ac)
+void screen_show_info(int printerEnabled, AdapterConfig *ac)
 {
   unsigned char i;
   screen_clear();
@@ -264,8 +236,6 @@ void screen_select_slot(char *e)
   unsigned int *s;
   unsigned char d[40];
 
-  screen_dlist_select_slot();
-  set_active_screen(SCREEN_SELECT_SLOT);
 
   screen_clear();
 
@@ -277,12 +247,9 @@ void screen_select_slot(char *e)
   // Show file details if it's an existing file only.
   if ( create == false )
   {
-
-    // Modified time
-    // sprintf(d, "%8s %04u-%02u-%02u %02u:%02u:%02u", "MTIME:", (*e++) + 1970, *e++, *e++, *e++, *e++, *e++);
-
-    // Remove for now (wasn't in original config, not really all that important and removng sprintf usage), so skip over the 6 bytes for the file date/time info.
-    e += 4;
+    // Modified time 
+    sprintf(d, "%8s %04u-%02u-%02u %02u:%02u:%02u", "MTIME:", (*e++) + 1970, *e++, *e++, *e++, *e++, *e++);
+    cputsxy(0, DEVICES_END_MOUNT_Y + 5, d);
 
     // File size
     // only 2 bytes, so max size is 65535.. don't show for now until SIO method is changed to return more.
@@ -293,14 +260,12 @@ void screen_select_slot(char *e)
     //sprintf(d, "%8s %u K", "SIZE:", *s >> 10); 
     //cputsxy(0, DEVICES_END_MOUNT_Y + 4, d);
 
-
     // Skip next 4 bytes to get to the filename (2 for the size, 2 for flags we don't care about)
     e += 4;
 
     // Filename
     cputsxy(3, DEVICES_END_MOUNT_Y + 2, "FILE:");
     cputsxy(9, DEVICES_END_MOUNT_Y + 2, e);
-
   }
 
   screen_hosts_and_devices_device_slots(DEVICES_START_MOUNT_Y, &deviceSlots, &deviceEnabled);
@@ -504,8 +469,6 @@ void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
   unsigned char i;
   char temp[10];
 
-  screen_dlist_hosts_and_devices();
-  set_active_screen(SCREEN_HOSTS_AND_DEVICES);
 
   screen_clear();
   bar_clear(false);
@@ -515,7 +478,48 @@ void screen_hosts_and_devices(HostSlot *h, DeviceSlot *d, unsigned char *e)
   cputsxy(0, 11, HORIZONTAL_LINE);
   cputsxy(26, 11, " DRIVE SLOTS ");
 
+  while (retry > 0)
+  {
+    io_get_host_slots(&hostSlots[0]);
+
+    if (io_error())
+      retry--;
+    else
+      break;
+  }
+
+  if (io_error())
+  {
+    screen_error("ERROR READING HOST SLOTS");
+    while (!kbhit())
+    {
+    }
+    cold_start();
+  }
+
+  retry = 5;
+
   screen_hosts_and_devices_host_slots(&hostSlots[0]);
+
+  while (retry > 0)
+  {
+    io_get_device_slots(&deviceSlots[0]);
+
+    if (io_error())
+      retry--;
+    else
+      break;
+  }
+
+  if (io_error())
+  {
+    screen_error("ERROR READING DEVICE SLOTS");
+    // die();
+    while (!kbhit())
+    {
+    }
+    cold_start();
+  }
 
   screen_hosts_and_devices_device_slots(DEVICES_START_Y, &deviceSlots[0], "");
 }
@@ -615,7 +619,8 @@ void screen_hosts_and_devices_devices_clear_all(void)
 
 void screen_hosts_and_devices_clear_host_slot(unsigned char i)
 {
-  // nothing to do, edit_line handles clearing correct space on screen, and doesn't touch the list numbers
+  // i comes in as the place in the array for this host slot. To get the corresponding position on the screen, add HOSTS_START_Y
+  screen_clear_line(i + HOSTS_START_Y);
 }
 
 void screen_hosts_and_devices_edit_host_slot(unsigned char i)
@@ -635,7 +640,7 @@ void screen_hosts_and_devices_eject(unsigned char ds)
 
   tmp[0] = ds + '1';
 
-  if ( mounting )
+  if ( mounting ) 
   {
     y = DEVICES_START_MOUNT_Y;
   }
@@ -748,6 +753,7 @@ int _screen_input(unsigned char x, unsigned char y, char *s, unsigned char maxle
   } while (k != KCODE_RETURN); // Continue to capture keyboard input until return (0x9B)
   cursor(0);
 }
+
 
 #ifdef DEBUG
 // Debugging function to show line #'s, used to test if the Y coordinate calculations are working.
