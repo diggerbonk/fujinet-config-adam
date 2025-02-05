@@ -3,7 +3,7 @@
  * Input routines
  */
 
-#include <msx.h>
+#include <video/tms99x8.h>
 #include <eos.h>
 #include <smartkeys.h>
 #include <conio.h>
@@ -34,8 +34,6 @@ extern unsigned short entry_timer;
 extern bool long_entry_displayed;
 extern unsigned char copy_host_slot;
 extern bool copy_mode;
-
-bool select_file_is_folder(void);
 
 /**
  * ADAM keyboard mapping
@@ -176,7 +174,7 @@ unsigned char input_ucase(void)
 
 static void input_clear_bottom(void)
 {
-  msx_vfill(0x1200,0x00,768);
+  vdp_vfill(0x1200,0x00,768);
 }
 
 void input_line(unsigned char x, unsigned char y, unsigned char o, char *c, unsigned char len, bool password)
@@ -297,9 +295,6 @@ HDSubState input_hosts_and_devices_hosts(void)
       }
       else
         return HD_HOSTS;
-    case KEY_ESCAPE: // ESC
-      quit();
-      break;
     case KEY_SMART_IV:
       state=SHOW_INFO;
       return HD_DONE;
@@ -393,7 +388,7 @@ SFSubState input_select_file_choose(void)
     {
     case KEY_RETURN:
       pos+=bar_get();
-      entryType = select_file_is_folder()
+      entryType = select_file_entry_type();
       if (entryType == ENTRY_TYPE_FOLDER)
         return SF_ADVANCE_FOLDER;
       else if (entryType == ENTRY_TYPE_LINK)
@@ -496,12 +491,14 @@ unsigned long input_select_file_new_size(unsigned char t)
     case 2: // DSK
       switch(cgetc())
 	{
-	case KEY_SMART_III:
+	case KEY_SMART_II:
 	  return 160;
-	case KEY_SMART_IV:
+	case KEY_SMART_III:
 	  return 320;
+	case KEY_SMART_IV:
+	  return 720;
 	case KEY_SMART_V:
-	  return 8192;
+	  return 1440;
 	case KEY_SMART_VI:
 	  return 1; // CUSTOM
 	}
@@ -543,6 +540,8 @@ SSSubState input_select_slot_choose(void)
     case KEY_SMART_V:
       selected_device_slot=bar_get();
       mode=0;
+      strncpy(source_path, path, 224);
+      old_pos = pos;
       return SS_DONE;
     case KEY_SMART_VI:
       selected_device_slot=bar_get();

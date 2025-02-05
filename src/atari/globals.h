@@ -59,13 +59,15 @@ extern HostSlot hostSlots[NUM_HOST_SLOTS];
 extern char mode;
 
 extern DirectoryPosition pos;
+extern DirectoryPosition old_pos;
 extern char path[224];
 extern char filter[32];
 extern bool create;
 extern bool dir_eof;
 extern bool quick_boot;
 extern bool deviceEnabled[8];
-
+extern bool backToFiles;
+extern bool backFromCopy;
 extern char _visibleEntries;
 
 extern unsigned short custom_numSectors;
@@ -74,7 +76,6 @@ extern unsigned short custom_sectorSize;
 extern bool mounting;
 
 extern unsigned char wifiEnabled;
-
 
 #endif /* GLOBALS_H */
 #endif /* BUILD_ATARI */

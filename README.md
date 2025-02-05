@@ -21,13 +21,30 @@ To compile, currently requires:
 #### Pull down cc65 code
    * https://github.com/cc65/cc65
 
-#### Build cc65:
-``` 
+#### Build cc65
+
+For unix environments:
+```shell
 $ PREFIX=/usr/local/cc65 make
 $ sudo PREFIX=/usr/local/cc65 make install
 ```
 
-It also requires these additional tools:
+For [MSYS2 environments](https://www.msys2.org/docs/environments/), you must be in an MSYS2 shell, and then install with
+
+```shell
+$ PREFIX=/usr/local/cc65 make
+$ PREFIX=/usr/local/cc65 make install
+```
+Note the lack of `sudo`.
+
+After this, you can use any subsystem shell (e.g. UCRT64) to run cc65 as normal.
+
+WARNING: If you are in a MinGW shell or any other sub-environment, the install will work, but will not be able to find the installed cfg, lib etc files.
+You must be in the MSYS2 shell for compiling and installing cc65, but not to run it.
+
+### Additional Tools
+
+Building config also requires these additional tools:
 
 * dir2atr - https://www.horus.com/~hias/atari/atarisio/atarisio-221009.tar.gz
   * download, build and install on your local build system
@@ -67,7 +84,7 @@ $ sudo PREFIX=/usr/local/cc65 make install
 ### Pull PlatformIO repo & config repo
 ```
 git clone https://github.com/FujiNetWIFI/fujinet-platformio.git
-git clone https://github.com/FujiNetWIFI/fujinet-config-adam.git
+git clone https://github.com/FujiNetWIFI/fujinet-config.git
 ```
 
 * You need the platformIO repo because the build script expects it to be in the same directory as CONFIG, so that it can push the completed Apple boot disk into the proper folder to be pushed to the FN device.
@@ -113,15 +130,13 @@ A copy of the Byte Works ORCA/C and its libraries is also required. You can get 
 #### Build GoldenGate:
 Detailed instuctions for building the GoldenGate binaries are given in the project README.md. For installation of GoldenGate and ORCA/C components, see https://goldengate.gitlab.io/manual/#installation.
 
-### CC65 headers installed in GoldenGate
-In addition, cc65 headers `conio.h`, `apple2.h` and `peekpoke.h` are necessary and should be present in ORCA/C include search path. You may copy them under ~/GoldenGate/Libraries/cc65. These are available here: https://github.com/cc65/cc65/tree/master/include.
-
 Now with those prerequisites out of the way:
 
 To build the ORCA shell EXE:
 ```
-cd fujinet-config-adam.git
-$ make -f Makefile.apple2gs clean dist
+$ cd fujinet-config
+$ make -f Makefile.apple2gs
+$ make -f Makefile.apple2gs dist
 ```
 
 Check for any errors. If successful there will be logs that say: 
@@ -139,8 +154,9 @@ Restart ORCA shell or issue a `commands 15:syscmnd` and you're ready.
 
 To build the CDA:
 ```
-cd fujinet-config-adam.git
-$ make -f Makefile.apple2cda clean dist
+cd fujinet-config
+$ make -f Makefile.apple2cda
+$ make -f Makefile.apple2cda dist
 ```
 
 Check for any errors. If successful there will be logs that say: 
@@ -165,6 +181,14 @@ To compile, currently requires:
 Make using 'make -f <file>'
   where file is Makefile.<platform>
 
+## Compiling on the RC2014
+To compiled, currently requires:
+
+* make
+* Z88DK (http://github.com/z88dk/z88dk)
+* fujinet-rc2014 (https://github.com/juzzas/fujinet-rc2014)
+
+Make using `make -f Makefile.rc2014`
 
 ## Screen Shots
 

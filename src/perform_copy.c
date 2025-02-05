@@ -4,8 +4,17 @@
  * Perform Copy operation
  */
 
-#include <conio.h>
+#ifdef _CMOC_VERSION_
+#include <cmoc.h>
+#include "coco/stdbool.h"
+#include "coco/screen.h"
+#include "coco/io.h"
+#include "coco/globals.h"
+#include "coco/input.h"
+#include "coco/bar.h"
+#else
 #include <string.h>
+#endif /* _CMOC_VERSION_ */
 #include "fuji_typedefs.h"
 
 #ifdef BUILD_ADAM
@@ -56,6 +65,23 @@
 #include "pc6001/bar.h"
 #endif /* BUILD_Pc6001 */
 
+#ifdef BUILD_PMD85
+#include "pmd85/screen.h"
+#include "pmd85/io.h"
+#include "pmd85/globals.h"
+#include "pmd85/input.h"
+#include "pmd85/bar.h"
+#endif /* BUILD_Pmd85 */
+
+#ifdef BUILD_RC2014
+#include "rc2014/screen.h"
+#include "rc2014/io.h"
+#include "rc2014/globals.h"
+#include "rc2014/input.h"
+#include "rc2014/bar.h"
+#include <conio.h>
+#endif /* BUILD_RC2014 */
+
 #include "perform_copy.h"
 
 extern char source_filename[128];
@@ -72,14 +98,12 @@ void perform_copy(void)
   strcat(copySpec, path);
   strcat(copySpec,source_filename);
   
-  clrscr();
-
   screen_perform_copy((char *)hostSlots[copy_host_slot],(char *)source_path,(char *)hostSlots[selected_host_slot],(char *)path);
 
   io_copy_file(copy_host_slot, selected_host_slot);
 
   copy_mode = false;
   
-  state = HOSTS_AND_DEVICES;
-
+  state=SELECT_FILE;
+  backFromCopy = true;
 }

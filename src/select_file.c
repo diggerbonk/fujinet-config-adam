@@ -4,8 +4,21 @@
  * Select file from Host Slot
  */
 
-#include <conio.h>
+#ifdef _CMOC_VERSION_
+#include <cmoc.h>
+#include "coco/strrchr.h"
+#include "coco/stdbool.h"
+#include "coco/screen.h"
+#include "coco/io.h"
+#include "coco/globals.h"
+#include "coco/input.h"
+#include "coco/bar.h"
+#define DIR_MAX_LEN 31
+#define ENTRIES_PER_PAGE 10
+#else
 #include <string.h>
+#endif /* CMOC_VERSION */
+
 #include "select_file.h"
 #include "fuji_typedefs.h"
 
@@ -66,13 +79,34 @@
 #define ENTRIES_PER_PAGE 15
 #endif /* BUILD_PC6001 */
 
+#ifdef BUILD_PMD85
+#include "pmd85/screen.h"
+#include "pmd85/io.h"
+#include "pmd85/globals.h"
+#include "pmd85/input.h"
+#include "pmd85/bar.h"
+#define DIR_MAX_LEN 36
+#define ENTRIES_PER_PAGE 15
+#endif /* BUILD_PMD85 */
+
+#ifdef BUILD_RC2014
+#include "rc2014/screen.h"
+#include "rc2014/io.h"
+#include "rc2014/globals.h"
+#include "rc2014/input.h"
+#include "rc2014/bar.h"
+#define DIR_MAX_LEN 31
+#define ENTRIES_PER_PAGE 15
+#endif /* BUILD_RC2014 */
+
 SFSubState sf_subState;
 char path[224];
-char filter[32];
+char filter[32] = {0};
 char source_path[224];
 char source_filter[32];
 char source_filename[128];
 DirectoryPosition pos = 0;
+DirectoryPosition old_pos = 0;
 bool dir_eof = false;
 bool quick_boot = false;
 unsigned long selected_size = 0;
@@ -83,6 +117,8 @@ bool copy_mode = false;
 unsigned char selected_file_type = 0;
 
 extern unsigned char copy_host_slot;
+extern bool backToFiles;
+extern bool backFromCopy;
 
 void select_file_init(void)
 {
@@ -95,19 +131,32 @@ void select_file_init(void)
   io_close_directory();
   pos = 0;
   memset(entry_size, 0, ENTRIES_PER_PAGE);
-  memset(path, 0, 256);
+
+  // clear path and filter
+#ifdef BUILD_PMD85
+  if ( !backToFiles ) {
+    memset(path, 0, 224);
+    path[0] = '/';
+    memset(filter, 0, 32);
+  }
+#else
+  memset(path, 0, 224);
   path[0] = '/';
-  memset(filter, 0, 32);
-  screen_select_file();
+  if ( !backToFiles ) {
+    memset(filter, 0, 32);
+  }
+#endif
+
   sf_subState = SF_DISPLAY;
   quick_boot = dir_eof = false;
+  screen_select_file();
 }
 
 unsigned char select_file_display(void)
 {
   char visibleEntries = 0;
   char i;
-  char *e;
+  const char *e;
 
   io_mount_host_slot(selected_host_slot);
 
@@ -149,7 +198,7 @@ unsigned char select_file_display(void)
     }
     else
     {
-      entry_size[i] = strlen(e+1);
+      entry_size[i] = (unsigned char)strlen(e+1);
       visibleEntries++; // could filter on e[0] to deal with message entries like on FUJINET.PL
       screen_select_file_display_entry(i, e+2, e[0]*16 + e[1]);
     }
@@ -194,7 +243,7 @@ void select_file_set_source_filename(void)
 
 void select_display_long_filename(void)
 {
-  char *e;
+  const char *e;
 
 #ifdef BUILD_ATARI
   if ((entry_size[bar_get() - FILES_START_Y] > LONG_FILENAME) && (entry_timer == 0))
@@ -280,7 +329,7 @@ void select_file_choose(char visibleEntries)
 
 void select_file_link(void)
 {
-  char *e;
+  const char *e;
   char tnfsHostname[128];
   bar_clear(false);
 
@@ -313,7 +362,7 @@ void select_file_link(void)
 
 void select_file_advance(void)
 {
-  char *e;
+  const char *e;
 
   bar_clear(false);
 
@@ -393,11 +442,7 @@ unsigned select_file_type(void)
 
 void select_file_new(void)
 {
-#ifdef __ORCAC__
-  static char f[128];
-#else
   char f[128];
-#endif
   char k;
 
   memset(f, 0, 128);
@@ -413,12 +458,14 @@ void select_file_new(void)
   screen_select_file_new_size(k);
   selected_size = input_select_file_new_size(k);
 
+#ifndef _CMOC_VERSION_
   if (selected_size == 1) // User selected custom
   {
     screen_select_file_new_custom();
     selected_size = input_select_file_new_custom();
   }
-
+#endif /* CMOC_VERSION */
+  
   if (selected_size == 0) // Aborted from size
   {
     sf_subState = SF_CHOOSE;
@@ -444,6 +491,7 @@ void select_file_new(void)
 void select_file_copy(void)
 {
   sf_subState = SF_DONE;
+  old_pos = pos;
   state = DESTINATION_HOST_SLOT;
 }
 
@@ -458,8 +506,39 @@ void select_file_done(void)
 void select_file(void)
 {
   char visibleEntries = 0;
+  char *match;
+  int len;
 
-  sf_subState = SF_INIT;
+  if (backToFiles)
+  {
+    // Return to the previous dir
+    select_file_init();
+    backToFiles = false;
+#ifndef BUILD_PMD85
+    strncpy(path, source_path, sizeof(path));
+#endif
+  }
+  else if (backFromCopy)
+  {
+    // Return to the source dir
+    sf_subState = SF_DISPLAY;
+    backFromCopy = false;
+    // get rid of filename from path
+    len = strlen(source_filename);
+    while ((match = strstr(source_path, source_filename))) {
+        *match = '\0';
+        strcat(source_path, match+len);
+    }
+    strncpy(path, source_path, sizeof(path));
+    selected_host_slot = copy_host_slot;
+    strcpy((char *)selected_host_name, (char *)hostSlots[selected_host_slot]);
+    pos = 0;
+    screen_select_file();
+  }
+  else
+  {
+    sf_subState = SF_INIT;
+  }
 
   while (state == SELECT_FILE)
   {

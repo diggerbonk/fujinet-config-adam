@@ -6,6 +6,14 @@
 
 #include "show_info.h"
 
+#ifdef _CMOC_VERSION_
+#include "coco/screen.h"
+#include "coco/input.h"
+#include "coco/globals.h"
+#include "coco/io.h"
+#define PRINTER 2 // ?
+#endif /* _CMOC_VERSION_ */
+
 #ifdef BUILD_ADAM
 #include "adam/screen.h"
 #include "adam/input.h"
@@ -30,7 +38,6 @@
 #define PRINTER 2 // ?
 #endif /* BUILD_ATARI */
 
-
 #ifdef BUILD_C64
 #include "c64/screen.h"
 #include "c64/input.h"
@@ -52,6 +59,22 @@
 #include "pc6001/globals.h"
 #include "pc6001/io.h"
 #endif /* BUILD_PC6001 */
+
+#ifdef BUILD_PMD85
+#include "pmd85/screen.h"
+#include "pmd85/input.h"
+#include "pmd85/globals.h"
+#include "pmd85/io.h"
+#define PRINTER 2 // ?
+#endif /* BUILD_PMD85 */
+
+#ifdef BUILD_RC2014
+#include "rc2014/screen.h"
+#include "rc2014/input.h"
+#include "rc2014/globals.h"
+#include "rc2014/io.h"
+#define PRINTER 2 // ?
+#endif /* BUILD_RC2014 */
 
 SISubState si_subState;
 
