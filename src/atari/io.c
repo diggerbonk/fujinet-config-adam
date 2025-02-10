@@ -162,6 +162,9 @@ void io_open_directory(unsigned char hs, char *p, char *f)
   // TODO: get rid of this old siov call, update fuji_open_directory
   // to take extra parameter so we can use it instead
   // fuji_open_directory(hs, _p);
+  // Note: we won't need this any more because we will not rely on sendin g
+  // this hint in daux2 that we want menu type information, we'll use 0x80 
+  // for that instead.
   OS.dcb.dcomnd = 0xF7;
   OS.dcb.dstats = 0x80;
   OS.dcb.dbyt = 256;

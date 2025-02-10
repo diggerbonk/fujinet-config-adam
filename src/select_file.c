@@ -298,6 +298,8 @@ void select_file_choose(char visibleEntries)
   while (sf_subState == SF_CHOOSE)
   {
     sf_subState = input_select_file_choose();
+    // below added because i don't want it in per-platform 
+    // code.
     if (sf_subState == SF_SELECTED) {
       pos += (bar_get() - FILES_START_Y );
       selected_file_type = select_file_entry_type();
